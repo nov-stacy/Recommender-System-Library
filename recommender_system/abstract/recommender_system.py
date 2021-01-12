@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
+import numpy as np
 
 
 class RecommenderSystem(ABC):
 
     @abstractmethod
-    def train(self):
+    def train(self, data: np.array):
         pass
 
     @abstractmethod
-    def retrain(self):
+    def retrain(self, data: np.array):
         pass
 
     @abstractmethod
