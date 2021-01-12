@@ -1,0 +1,14 @@
+import numpy as np
+from recommender_system.abstract import RecommenderSystem
+
+
+class SingularValueDecomposition(RecommenderSystem):
+
+    def train(self, data: np.array):
+        pass
+
+    def retrain(self, data: np.array):
+        pass
+
+    def issue_ranked_list(self):
+        pass
