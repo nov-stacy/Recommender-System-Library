@@ -1,2 +1,3 @@
-import factorizing_machines
-import neural_networks
+import recommender_system.factorizing_machines
+import recommender_system.neural_networks
+import recommender_system.simple_methods

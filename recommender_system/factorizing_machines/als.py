@@ -10,5 +10,5 @@ class AlternatingLeastSquares(RecommenderSystem):
     def retrain(self, data: np.array):
         pass
 
-    def issue_ranked_list(self):
+    def issue_ranked_list(self, user_index: int, k_items: int):
         pass
