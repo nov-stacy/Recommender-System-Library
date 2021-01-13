@@ -5,7 +5,7 @@ from sklearn.neighbors import NearestNeighbors
 from recommender_system.abstract import RecommenderSystem
 
 
-class NearestNeigborsMethod(RecommenderSystem):
+class NearestNeigborsModel(RecommenderSystem):
     """
     Distance-based recommender systems method between users and recommending what neighbors like
     """
@@ -16,8 +16,8 @@ class NearestNeigborsMethod(RecommenderSystem):
         estimate for an item
         """
         self.__knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neigbors + 1)
-        self.__data: np.array = np.array([])
         self.__clear_data: np.array = np.array([])
+        self.__data: np.array = np.array([])
         self.__mean_items: np.array = np.array([])
         self.__mean_users: np.array = np.array([])
 
@@ -28,7 +28,7 @@ class NearestNeigborsMethod(RecommenderSystem):
         :param users_indexes: users ratio with which to get
         :return: correlation coefficients
         """
-        return np.vectorize(lambda index: pearsonr(self.__data[user_index], self.__data[index])[0])(users_indexes)
+        return np.vectorize(lambda index: pearsonr(self.__clear_data[user_index], self.__clear_data[index])[0])(users_indexes)
 
     def __calculate_ratings(self, user_index: int) -> tp.List[tp.Tuple[int, int]]:
         """
@@ -37,17 +37,17 @@ class NearestNeigborsMethod(RecommenderSystem):
         :return: list of elements of (rating, index_item) for each item
         """
         # find a list of k nearest neigbors of current user
-        nearest_users = self.__knn.kneighbors(self.__data[user_index].reshape(1, -1), return_distance=False)[0]
+        nearest_users = self.__knn.kneighbors(self.__clear_data[user_index].reshape(1, -1), return_distance=False)[0]
         nearest_users = nearest_users[nearest_users != user_index]
 
         # get correlation coefficient and change nan values
         correlation_coefficients = np.nan_to_num(self.__calculate_correlation_coefficients(user_index, nearest_users))
 
         # find items that user didnt mark
-        unknown_ratings = np.argwhere(np.isnan(self.__clear_data[user_index]))
+        unknown_ratings = np.argwhere(np.isnan(self.__data[user_index]))
 
         # get ratings given by nearest users to product data
-        ratings_users = self.__data[nearest_users, unknown_ratings]
+        ratings_users = self.__clear_data[nearest_users, unknown_ratings]
 
         # get mean ratings of items and mean ratings given by users
         mean_users = self.__mean_users[nearest_users]
@@ -58,15 +58,15 @@ class NearestNeigborsMethod(RecommenderSystem):
         denominator = np.sum(np.abs(correlation_coefficients))
         return list(zip(mean_items + numerator / denominator, unknown_ratings[:, 0]))
 
-    def train(self, data: np.array) -> 'NearestNeigborsMethod':
-        self.__clear_data = data
-        self.__data = np.nan_to_num(self.__clear_data)
-        self.__mean_items = self.__data.mean(axis=0).transpose()
-        self.__mean_users = self.__data.mean(axis=1)
-        self.__knn.fit(self.__data)
+    def train(self, data: np.array) -> 'NearestNeigborsModel':
+        self.__data = data
+        self.__clear_data = np.nan_to_num(self.__data)
+        self.__mean_items = self.__clear_data.mean(axis=0).transpose()
+        self.__mean_users = self.__clear_data.mean(axis=1)
+        self.__knn.fit(self.__clear_data)
         return self
 
-    def retrain(self, data: np.array) -> 'NearestNeigborsMethod':
+    def retrain(self, data: np.array) -> 'NearestNeigborsModel':
         return self.train(data)
 
     def issue_ranked_list(self, user_index: int, k_items: int) -> np.array:
