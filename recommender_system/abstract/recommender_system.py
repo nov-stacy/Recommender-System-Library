@@ -1,11 +1,21 @@
 from abc import ABC, abstractmethod
 import numpy as np
+import typing as tp
 
 
 class RecommenderSystem(ABC):
     """
     Abstract class for system of recommendations
     """
+
+    @abstractmethod
+    def __calculate_ratings(self, user_index: int) -> tp.List[tp.Tuple[int, int]]:
+        """
+        Method to calculate ratings to items that user didnt mark
+        :param user_index: the index of the user to make the prediction
+        :return: list of elements of (rating, index_item) for each item
+        """
+        pass
 
     @abstractmethod
     def train(self, data: np.array) -> 'RecommenderSystem':

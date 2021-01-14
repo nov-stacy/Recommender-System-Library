@@ -31,11 +31,6 @@ class NearestNeigborsModel(RecommenderSystem):
         return np.vectorize(lambda index: pearsonr(self.__clear_data[user_index], self.__clear_data[index])[0])(users_indexes)
 
     def __calculate_ratings(self, user_index: int) -> tp.List[tp.Tuple[int, int]]:
-        """
-        Method to calculate ratings to items that user didnt mark
-        :param user_index: the index of the user to make the prediction
-        :return: list of elements of (rating, index_item) for each item
-        """
         # find a list of k nearest neigbors of current user
         nearest_users = self.__knn.kneighbors(self.__clear_data[user_index].reshape(1, -1), return_distance=False)[0]
         nearest_users = nearest_users[nearest_users != user_index]
