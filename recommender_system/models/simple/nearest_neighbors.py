@@ -8,13 +8,22 @@ from recommender_system.models.abstract_recommender_system import RecommenderSys
 
 class NearestNeigborsModel(RecommenderSystem):
     """
-    Distance-based recommender systems method between users and recommending what neighbors like
+    Recommender system based on distance between users and what neighbors like
+
+    Realization
+    -----------
+
+    Determine the nearest neighbors for the user and determine ratings
+    based on what they like and the distance to them
     """
 
     def __init__(self, k_nearest_neigbors: int) -> None:
         """
-        :param k_nearest_neigbors: the number of closest neighbors that must be taken into account when predicting an
-        estimate for an item
+        Parameters
+        ----------
+        k_nearest_neigbors:
+            The number of closest neighbors that must be taken into account
+            when predicting an estimate for an item
         """
         self.__knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neigbors + 1)
         self.__data: sparse.coo_matrix = np.array([])
@@ -24,9 +33,17 @@ class NearestNeigborsModel(RecommenderSystem):
     def __calculate_correlation_coefficients(self, user_index: int, users_indexes: tp.List[int]) -> np.ndarray:
         """
         Method to calculate correlation coefficients between users
-        :param user_index: current user
-        :param users_indexes: users ratio with which to get
-        :return: correlation coefficients
+
+        Parameters
+        ----------
+        user_index: int
+            Current user
+        users_indexes: array of ints
+            Users ratio with which to get
+
+        Returns
+        -------
+        Correlation coefficients: numpy array
         """
         return np.vectorize(lambda index: pearsonr(self.__data.getrow(user_index).toarray()[0],
                                                    self.__data.getrow(index).toarray()[0])[0])(users_indexes)

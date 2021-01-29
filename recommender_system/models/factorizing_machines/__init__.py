@@ -1,1 +1,1 @@
-from . import svd
+from .svd import SingularValueDecompositionModel
