@@ -87,7 +87,7 @@ def generate_one_experiment(experiment_model: ExperimentModel) -> tp.Dict[str, f
     }
 
 
-def generate_metrics_plot(model_class: str,
+def generate_metrics_plot(data_name: str, model_class: str,
                           param_name: str, params_list: tp.List[tp.Any],
                           experiment_models: tp.List[ExperimentModel]) -> None:
 
@@ -103,14 +103,14 @@ def generate_metrics_plot(model_class: str,
         plt.title(model_class)
         plt.xlabel(param_name)
         plt.ylabel(metric_name)
-        plt.savefig(f'result_plot/{model_class}_{param_name}_{metric_name}.png')
+        plt.savefig(f'result_plot/{data_name}_{model_class}_{param_name}_{metric_name}.png')
         plt.clf()
 
 
 def generate_experiment(model_class: RecommenderSystem.__class__,
                         parameter_name: str, params_list: tp.List[tp.Any],
                         init_params: tp.Dict[str, tp.Any], train_params: tp.Dict[str, tp.Any],
-                        data_train: sparse.coo_matrix, data_test: sparse.coo_matrix) -> None:
+                        data_train: sparse.coo_matrix, data_test: sparse.coo_matrix, data_name: str) -> None:
 
     nearest_neigbors_experiment_models = [
         ExperimentModel(
@@ -120,23 +120,43 @@ def generate_experiment(model_class: RecommenderSystem.__class__,
         for parameter in params_list
     ]
 
-    generate_metrics_plot(model_class.__name__, parameter_name, params_list, nearest_neigbors_experiment_models)
+    generate_metrics_plot(data_name, model_class.__name__, parameter_name, params_list,
+                          nearest_neigbors_experiment_models)
 
 
-def main():
-    data = read_data_from_npz_file('data/matrix.npz')
+def main_experiment():
+    data_name = 'ratings'
+
+    data = read_data_from_npz_file(f'data/{data_name}_matrix.npz')
     data_train, data_test = extra_functions.train_test_split(data)
 
-    # generate_experiment(models.simple.NearestNeigborsModel, 'k_nearest_neigbors', [2, 4, 6, 8, 10], {}, {},
+    # generate_experiment(data_name, models.simple.NearestNeigborsModel, 'k_nearest_neigbors', [2, 4, 6, 8, 10], {}, {},
     #                     data_train, data_test)
 
-    # generate_experiment(models.factorizing_machines.SingularValueDecompositionModel,
+    # generate_experiment(data_name, models.factorizing_machines.SingularValueDecompositionModel,
     #                     'dimension', [50, 100, 150], {}, {}, data_train, data_test)
 
-    # generate_experiment(models.factorizing_machines.AlternatingLeastSquaresModel,
-    #                    'dimension', [500, 1000, 1500, 2000], {'learning_rate': 0.1}, {}, data_train, data_test)
+    # generate_experiment(data_name, models.factorizing_machines.AlternatingLeastSquaresModel,
+    #                     'dimension', [500, 1000, 1500, 2000], {'learning_rate': 0.1}, {}, data_train, data_test)
+
+
+def main_train_alternating_least_squares_model():
+    data_name = 'random'
+    data = read_data_from_npz_file(f'data/{data_name}_matrix.npz')
+
+    model = models.factorizing_machines.AlternatingLeastSquaresModel(dimension=75, learning_rate=0.02)
+    model.train(data, iteration_number=500, debug=True)
+
+    debug_values = model.get_debug_information()
+    print(len(debug_values))
+
+    plt.plot(range(len(debug_values)), debug_values)
+    plt.title('Debug Alternating Least Squares Model')
+    plt.xlabel('iteration number')
+    plt.ylabel('metric')
+    plt.savefig(f'result_plot/{data_name}_debug_als')
 
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
-    main()
+    main_train_alternating_least_squares_model()

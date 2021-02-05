@@ -1,7 +1,9 @@
 import numpy as np
 import random
+import typing as tp
 from scipy import sparse as sparse
 from recommender_system.models.abstract_recommender_system import RecommenderSystem
+from tqdm import tqdm
 
 
 class AlternatingLeastSquaresModel(RecommenderSystem):
@@ -38,7 +40,15 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
         self.__user_matrix: np.ndarray = np.array([])  # matrix of users with latent features
         self.__item_matrix: np.ndarray = np.array([])  # matrix of items with latent features
 
-    def __use_stochastic_gradient_descent(self, iteration_number: int) -> None:
+        self.__debug_information: tp.List[float] = []
+
+    def __calculate_debug_metric(self) -> float:
+        result: float = 0
+        for user_index, item_index, data in zip(self.__data.row, self.__data.col, self.__data.data):
+            result += (data - self.__user_matrix[user_index] @ self.__item_matrix[item_index].T) ** 2
+        return result
+
+    def __use_stochastic_gradient_descent(self, iteration_number: int, debug: bool) -> None:
         """
         Method for stochastic gradient descent
 
@@ -46,11 +56,15 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
         ----------
         iteration_number: int
             The number of iterations that the method must pass
+        debug: bool
+            TODO
         """
 
         non_null_data_shape: int = self.__data.data.shape[0]  # amount of non-zero data
 
-        for _ in range(iteration_number):
+        self.__debug_information: tp.List[float] = []
+
+        for _ in tqdm(range(iteration_number)):
 
             # get random index: random user and random item
             random_index: int = random.randint(0, self.__data.row.shape[0] - 1)
@@ -72,8 +86,15 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
                     delta_approximation * self.__user_matrix[random_user_index] - 2 * self.__item_regularization *
                     np.sum(self.__item_matrix[random_item_index]) / non_null_data_shape)
 
+            if debug:
+                self.__debug_information.append(self.__calculate_debug_metric())
+
+    def get_debug_information(self) -> tp.List[float]:
+        return self.__debug_information
+
     def train(self, data: sparse.coo_matrix,
-              iteration_number: int = 1000  # The number of iterations that the method must pass
+              iteration_number: int = 1000,  # The number of iterations that the method must pass
+              debug=False  # TODO
               ) -> 'RecommenderSystem':
 
         self.__data = data.copy()
@@ -82,12 +103,13 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
         self.__user_matrix: np.ndarray = np.random.randn(self.__data.shape[0], self.__dimension)
         self.__item_matrix: np.ndarray = np.random.randn(self.__data.shape[1], self.__dimension)
 
-        self.__use_stochastic_gradient_descent(iteration_number)
+        self.__use_stochastic_gradient_descent(iteration_number, debug)
 
         return self
 
     def retrain(self, data: sparse.coo_matrix,
-                iteration_number: int = 1000  # The number of iterations that the method must pass
+                iteration_number: int = 1000,  # The number of iterations that the method must pass
+                debug: bool = False  # TODO
                 ) -> 'RecommenderSystem':
 
         # add new users to matrix
@@ -103,7 +125,7 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
                                                             self.__dimension)))
 
         self.__data = data.copy()
-        self.__use_stochastic_gradient_descent(iteration_number)
+        self.__use_stochastic_gradient_descent(iteration_number, debug)
 
         return self
 

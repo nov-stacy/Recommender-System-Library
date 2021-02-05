@@ -50,7 +50,15 @@ def generate_sparse_matrix(table: pd.DataFrame, column_user_id, column_item_id, 
     return construct_coo_matrix_from_data(rows, columns, data, matrix_shape)
 
 
+def main(data_name: str, column_user_id: str, column_item_id: str, column_rating: str) -> None:
+    """
+
+    """
+    data: pd.DataFrame = read_data_from_csv(f'data/{data_name}.csv')
+    matrix = generate_sparse_matrix(data, column_user_id, column_item_id, column_rating)
+    write_data_to_npz(matrix, f'data/{data_name}_matrix.npz')
+
+
 if __name__ == '__main__':
-    data_ratings: pd.DataFrame = read_data_from_csv('data/rating.csv')
-    matrix = generate_sparse_matrix(data_ratings, 'user_id', 'anime_id', 'rating')
-    write_data_to_npz(matrix, 'data/matrix.npz')
+    main('purchases', 'user_id', 'product_id', 'event_weight')
+    main('ratings', 'user_id', 'anime_id', 'rating')
