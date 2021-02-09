@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import typing as tp
 from scipy import sparse as sparse
 from recommender_system.models.abstract_recommender_system import RecommenderSystem
@@ -48,52 +47,61 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
             result += (data - self.__user_matrix[user_index] @ self.__item_matrix[item_index].T) ** 2
         return result
 
-    def __use_stochastic_gradient_descent(self, iteration_number: int, debug: bool) -> None:
+    def __use_stochastic_gradient_descent(self, epochs: int, debug: bool) -> None:
         """
         Method for stochastic gradient descent
 
         Parameters
         ----------
-        iteration_number: int
-            The number of iterations that the method must pass
+        epochs: int
+            The number of epochs that the method must pass
         debug: bool
             TODO
         """
 
         non_null_data_shape: int = self.__data.data.shape[0]  # amount of non-zero data
-
+        learning_rate = self.__learning_rate
         self.__debug_information: tp.List[float] = []
 
-        for _ in tqdm(range(iteration_number)):
+        for epoch in tqdm(range(epochs)):
 
-            # get random index: random user and random item
-            random_index: int = random.randint(0, self.__data.row.shape[0] - 1)
-            random_user_index: int = self.__data.row[random_index]
-            random_item_index: int = self.__data.col[random_index]
-            rating: float = self.__data.data[random_index]
+            shuffle_indices = np.arange(non_null_data_shape)
+            np.random.shuffle(shuffle_indices)
 
-            # get the difference between the true value of the rating and the approximate
-            delta_approximation = rating - self.__user_matrix[random_user_index] @ \
-                                  self.__item_matrix[random_item_index].T
+            for index in shuffle_indices:
 
-            # change user weights
-            self.__user_matrix[random_user_index] += self.__learning_rate * (
-                    delta_approximation * self.__item_matrix[random_item_index] - 2 * self.__user_regularization *
-                    np.sum(self.__user_matrix[random_user_index]) / non_null_data_shape)
+                # get indices for user and item and rating
+                user_index: int = self.__data.row[index]
+                item_index: int = self.__data.col[index]
+                rating: float = self.__data.data[index]
 
-            # change item weights
-            self.__item_matrix[random_item_index] += self.__learning_rate * (
-                    delta_approximation * self.__user_matrix[random_user_index] - 2 * self.__item_regularization *
-                    np.sum(self.__item_matrix[random_item_index]) / non_null_data_shape)
+                # get the difference between the true value of the rating and the approximate
+                delta_approximation = rating - self.__user_matrix[user_index] @ \
+                                      self.__item_matrix[item_index].T
+
+                # change user weights
+                user_regularization_add = 2 * self.__user_regularization * \
+                                          np.sum(self.__user_matrix[user_index]) / non_null_data_shape
+                self.__user_matrix[user_index] += learning_rate * (delta_approximation * self.__item_matrix[item_index]
+                                                                   - user_regularization_add)
+
+                # change item weights
+                item_regularization_add = 2 * self.__item_regularization * \
+                                          np.sum(self.__item_matrix[item_index]) / non_null_data_shape
+                self.__item_matrix[item_index] += learning_rate * (delta_approximation * self.__user_matrix[user_index]
+                                                                   - item_regularization_add)
+
+            # learning_rate *= 1 / np.log(epoch)
 
             if debug:
-                self.__debug_information.append(self.__calculate_debug_metric())
+                value = self.__calculate_debug_metric()
+                self.__debug_information.append(value)
 
     def get_debug_information(self) -> tp.List[float]:
         return self.__debug_information
 
     def train(self, data: sparse.coo_matrix,
-              iteration_number: int = 1000,  # The number of iterations that the method must pass
+              epochs: int = 100,  # The number of epochs that the method must pass
               debug=False  # TODO
               ) -> 'RecommenderSystem':
 
@@ -103,12 +111,12 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
         self.__user_matrix: np.ndarray = np.random.randn(self.__data.shape[0], self.__dimension)
         self.__item_matrix: np.ndarray = np.random.randn(self.__data.shape[1], self.__dimension)
 
-        self.__use_stochastic_gradient_descent(iteration_number, debug)
+        self.__use_stochastic_gradient_descent(epochs, debug)
 
         return self
 
     def retrain(self, data: sparse.coo_matrix,
-                iteration_number: int = 1000,  # The number of iterations that the method must pass
+                epochs: int = 100,  # The number of epochs that the method must pass
                 debug: bool = False  # TODO
                 ) -> 'RecommenderSystem':
 
@@ -125,7 +133,7 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
                                                             self.__dimension)))
 
         self.__data = data.copy()
-        self.__use_stochastic_gradient_descent(iteration_number, debug)
+        self.__use_stochastic_gradient_descent(epochs, debug)
 
         return self
 

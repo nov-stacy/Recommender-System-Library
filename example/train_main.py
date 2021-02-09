@@ -142,19 +142,18 @@ def main_experiment():
 
 def main_train_alternating_least_squares_model():
     data_name = 'random'
-    data = read_data_from_npz_file(f'data/{data_name}_matrix.npz')
+    data = read_data_from_npz_file(f'data/{data_name}_matrix_50.npz')
 
-    model = models.factorizing_machines.AlternatingLeastSquaresModel(dimension=75, learning_rate=0.02)
-    model.train(data, iteration_number=500, debug=True)
+    model = models.factorizing_machines.AlternatingLeastSquaresModel(dimension=35, learning_rate=0.02)
+    model.train(data, epochs=30, debug=True)
 
     debug_values = model.get_debug_information()
-    print(len(debug_values))
 
     plt.plot(range(len(debug_values)), debug_values)
     plt.title('Debug Alternating Least Squares Model')
     plt.xlabel('iteration number')
     plt.ylabel('metric')
-    plt.savefig(f'result_plot/{data_name}_debug_als')
+    plt.savefig(f'result_plot/{data_name}_debug_als_50')
 
 
 if __name__ == '__main__':
