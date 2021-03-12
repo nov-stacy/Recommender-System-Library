@@ -144,7 +144,7 @@ def main_train_alternating_least_squares_model():
     data_name = 'random'
     data = read_data_from_npz_file(f'data/{data_name}_matrix_50.npz')
 
-    model = models.factorizing_machines.AlternatingLeastSquaresModel(dimension=35, learning_rate=0.02)
+    model = models.factorizing_machines.LatentFactorModel(dimension=35, learning_rate=0.02)
     model.train(data, epochs=30, debug=True)
 
     debug_values = model.get_debug_information()

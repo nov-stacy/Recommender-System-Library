@@ -26,20 +26,13 @@ class SingularValueDecompositionModel(RecommenderSystem):
         self.__second_matrix: np.ndarray = np.array([])
         self.__singular_values: np.ndarray = np.array([])
         self.__data: sparse.coo_matrix = sparse.eye(0)
-        self.__indices_ptr: np.ndarray = np.array([])
-        self.__indices: np.ndarray = np.array([])
 
     def train(self, data: sparse.coo_matrix) -> 'SingularValueDecompositionModel':
         csr_data: sparse.csr_matrix = data.tocsr()
         self.__first_matrix, self.__singular_values, self.__second_matrix = svds(csr_data, k=self.__dimension)
-        self.__indices_ptr = csr_data.indptr
-        self.__indices = csr_data.indices
         self.__data = data.copy()
         return self
 
-    def retrain(self, data: sparse.coo_matrix) -> 'SingularValueDecompositionModel':
-        return self.train(data)
-
-    def predict(self, user_index) -> np.ndarray:
+    def predict_ratings(self, user_index) -> np.ndarray:
         return self.__first_matrix[user_index] @ np.diag(self.__singular_values) @ self.__second_matrix
 
