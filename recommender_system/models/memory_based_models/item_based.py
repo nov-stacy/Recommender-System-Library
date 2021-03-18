@@ -5,7 +5,7 @@ from scipy import sparse as sparse
 from scipy.spatial.distance import correlation
 from sklearn.neighbors import NearestNeighbors
 
-from recommender_system.models.abstract_recommender_system import RecommenderSystem
+from recommender_system.models.abstract import RecommenderSystem
 
 
 class ItemBasedCollaborativeFilteringModel(RecommenderSystem):

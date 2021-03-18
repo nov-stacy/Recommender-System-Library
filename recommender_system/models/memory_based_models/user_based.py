@@ -3,7 +3,7 @@ from scipy import sparse as sparse
 from scipy.stats import pearsonr
 from sklearn.neighbors import NearestNeighbors
 
-from recommender_system.models.abstract_recommender_system import RecommenderSystem
+from recommender_system.models.abstract import RecommenderSystem
 
 
 class UserBasedCollaborativeFilteringModel(RecommenderSystem):
