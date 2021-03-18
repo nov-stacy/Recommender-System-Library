@@ -3,10 +3,11 @@ from scipy import sparse as sparse
 from scipy.sparse.linalg import cg as solve
 from tqdm import tqdm
 
-from recommender_system.models.abstract_recommender_system import RecommenderSystem
+from recommender_system.functional_errors.latent_error import calculate_error_for_latent_models
+from recommender_system.models.abstract import RecommenderSystem, DebugInterface
 
 
-class AlternatingLeastSquaresModel(RecommenderSystem):
+class AlternatingLeastSquaresModel(RecommenderSystem, DebugInterface):
     """
     A model with hidden variables.
 
@@ -25,6 +26,8 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
         dimension: int
             The number of singular values to keep
         """
+
+        super(DebugInterface, self).__init__(calculate_error_for_latent_models)
 
         self.__dimension: int = dimension
 
@@ -77,6 +80,7 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
 
     def train(self, data: sparse.coo_matrix,
               epochs: int = 100,  # The number of epochs that the method must pass
+              is_debug: bool = False  # Indicator of the need to maintain the error functionality on each epoch
               ) -> 'RecommenderSystem':
 
         users_count: int = data.shape[0]  # number of users in the system
@@ -86,11 +90,31 @@ class AlternatingLeastSquaresModel(RecommenderSystem):
         self.__user_matrix: np.ndarray = np.random.randn(users_count, self.__dimension)
         self.__item_matrix: np.ndarray = np.random.randn(items_count, self.__dimension)
 
+        # determining average values for users and items
+        mean_users: np.ndarray = data.mean(axis=1)
+        mean_items: np.ndarray = data.mean(axis=0).transpose()
+
+        # determining known ratings
+        users_indices: np.ndarray = data.row
+        items_indices: np.ndarray = data.col
+        ratings: np.ndarray = data.data
+
+        self.__update_debug_information(is_debug)
+
         for _ in tqdm(range(epochs)):
 
             # calculate matrices for users and items analytically
             self.__calculate_user_matrix(data, users_count, items_count)
             self.__calculate_item_matrix(data, users_count, items_count)
+
+            self.__set_debug_information(is_debug, self.__user_matrix, self.__item_matrix, mean_users, mean_items,
+                                         users_indices, items_indices, ratings)
+
+    def retrain(self, data: sparse.coo_matrix,
+                epochs: int = 100,  # The number of epochs that the method must pass
+                is_debug: bool = False  # Indicator of the need to maintain the error functionality on each epoch
+                ) -> 'RecommenderSystem':
+        self.train(data, epochs, is_debug)
 
     def predict_ratings(self, user_index) -> np.ndarray:
         return self.__user_matrix[user_index] @ self.__item_matrix.T

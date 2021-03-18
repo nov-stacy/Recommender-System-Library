@@ -1,13 +1,12 @@
-import typing as tp
-
 import numpy as np
 from scipy import sparse
 from tqdm import tqdm
 
-from recommender_system.models.abstract_recommender_system import RecommenderSystem
+from recommender_system.functional_errors.latent_error import calculate_error_for_latent_models
+from recommender_system.models.abstract import RecommenderSystem, DebugInterface
 
 
-class StochasticLatentFactorModel(RecommenderSystem):
+class StochasticLatentFactorModel(RecommenderSystem, DebugInterface):
     """
     A model with hidden variables.
 
@@ -19,8 +18,8 @@ class StochasticLatentFactorModel(RecommenderSystem):
     and goes through them.
     """
 
-    def __init__(self, dimension: int, learning_rate: float,
-                 user_regularization: float = 0, item_regularization: float = 0) -> None:
+    def __init__(self, dimension: int, learning_rate: float, user_regularization: float = 0,
+                 item_regularization: float = 0) -> None:
         """
         Parameters
         ----------
@@ -35,6 +34,8 @@ class StochasticLatentFactorModel(RecommenderSystem):
             Regularization member for item data
         """
 
+        super(DebugInterface, self).__init__(calculate_error_for_latent_models)
+
         self.__dimension: int = dimension
         self.__rate: float = learning_rate
         self.__user_regularization: float = user_regularization
@@ -46,38 +47,29 @@ class StochasticLatentFactorModel(RecommenderSystem):
         self.__users_count: int = 0  # number of users in the system
         self.__items_count: int = 0  # number of items in the system
 
-        self.__debug_information: tp.Optional[tp.List[float]] = None  # array with errors on each epoch
+    def __calculate_user_matrix(self, user_index: int, item_index: int, rating: float,
+                                mean_users: np.ndarray, mean_items: np.ndarray,) -> None:
+        # similarity between user and item
+        similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
+        # get the difference between the true value of the rating and the approximate
+        delta = rating - mean_users[user_index] - mean_items[item_index] - similarity
 
-    def __calculate_error(self, mean_users: np.ndarray, mean_items: np.ndarray, users_indices: np.ndarray,
-                          items_indices: np.ndarray, ratings: np.ndarray,) -> float:
-        """
-        Method for determining the error functional in a model with hidden variables
+        # the value of regularization for the user
+        user_reg = self.__user_regularization * np.sum(self.__user_matrix[user_index]) / self.__dimension
+        # changing hidden variables for the user
+        self.__user_matrix[user_index] += self.__rate * (delta * self.__item_matrix[item_index] - user_reg)
 
-        Parameters
-        ----------
-        mean_users: numpy array
-            Array with the average for each user
-        mean_items: numpy array
-            Array with the average for each item
-        users_indices: numpy array
-            Indices of users for whom ratings are known
-        items_indices: numpy array
-            Indices of items for whom ratings are known
-        ratings: numpy array
-            Known ratings
-        """
+    def __calculate_item_matrix(self, user_index: int, item_index: int, rating: float,
+                                mean_users: np.ndarray, mean_items: np.ndarray,) -> None:
+        # similarity between user and item
+        similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
+        # get the difference between the true value of the rating and the approximate
+        delta = rating - mean_users[user_index] - mean_items[item_index] - similarity
 
-        result: float = 0  # error functionality
-
-        # for each user and item for which the ratings are known
-        for user_index, item_index, rating in zip(users_indices, items_indices, ratings):
-
-            # similarity between user and item
-            similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
-            # adding to the functionality
-            result += (rating - mean_users[user_index] - mean_items[item_index] - similarity) ** 2
-
-        return result
+        # the value of regularization for the item
+        item_reg = self.__item_regularization * np.sum(self.__item_matrix[item_index]) / self.__dimension
+        # changing hidden variables for the item
+        self.__item_matrix[item_index] += self.__rate * (delta * self.__user_matrix[user_index] - item_reg)
 
     def __use_stochastic_gradient_descent(self, epochs: int, mean_users: np.ndarray, mean_items: np.ndarray,
                                           users_indices: np.ndarray, items_indices: np.ndarray,
@@ -103,7 +95,7 @@ class StochasticLatentFactorModel(RecommenderSystem):
             Indicator of the need to maintain the error functionality on each epoch
         """
 
-        self.__debug_information = [] if is_debug else None
+        self.__update_debug_information(is_debug)
 
         for _ in tqdm(range(epochs)):
 
@@ -117,25 +109,11 @@ class StochasticLatentFactorModel(RecommenderSystem):
                 item_index: int = items_indices[index]
                 rating: float = ratings[index]
 
-                # similarity between user and item
-                similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
-                # get the difference between the true value of the rating and the approximate
-                delta = rating - mean_users[user_index] - mean_items[item_index] - similarity
+                self.__calculate_user_matrix(user_index, item_index, rating, mean_users, mean_items)
+                self.__calculate_item_matrix(user_index, item_index, rating, mean_users, mean_items)
 
-                # the value of regularization for the user
-                user_reg = self.__user_regularization * np.sum(self.__user_matrix[user_index]) / self.__dimension
-                # changing hidden variables for the user
-                self.__user_matrix[user_index] += self.__rate * (delta * self.__item_matrix[item_index] - user_reg)
-
-                # the value of regularization for the item
-                item_reg = self.__item_regularization * np.sum(self.__item_matrix[item_index]) / self.__dimension
-                # changing hidden variables for the item
-                self.__item_matrix[item_index] += self.__rate * (delta * self.__user_matrix[user_index] - item_reg)
-
-            if is_debug:
-                # calculate error functionality
-                error = self.__calculate_error(mean_users, mean_items, users_indices, items_indices, ratings)
-                self.__debug_information.append(error)
+            self.__set_debug_information(is_debug, self.__user_matrix, self.__item_matrix, mean_users, mean_items,
+                                         users_indices, items_indices, ratings)
 
     def __start_train(self, data: sparse.coo_matrix, epochs: int, is_debug: bool):
         """
@@ -203,17 +181,3 @@ class StochasticLatentFactorModel(RecommenderSystem):
 
     def predict_ratings(self, user_index: int) -> np.ndarray:
         return self.__user_matrix[user_index] @ self.__item_matrix.T
-
-    def get_debug_information(self) -> tp.List[float]:
-        """
-        Method for getting a list of functionality errors that were optimized during training
-
-        Returns
-        -------
-        list of functionality errors: list[float]
-        """
-
-        if self.__debug_information is None:
-            raise AttributeError("No debug information because there was is_debug = False during training")
-        else:
-            return self.__debug_information
