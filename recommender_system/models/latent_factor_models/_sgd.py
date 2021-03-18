@@ -2,7 +2,7 @@ import numpy as np
 from scipy import sparse
 from tqdm import tqdm
 
-from recommender_system.functional_errors.latent_error import calculate_error_for_latent_models
+from recommender_system.functional_errors import calculate_error_for_latent_models
 from recommender_system.models.abstract import RecommenderSystem, DebugInterface
 
 
@@ -47,24 +47,50 @@ class StochasticLatentFactorModel(RecommenderSystem, DebugInterface):
         self.__users_count: int = 0  # number of users in the system
         self.__items_count: int = 0  # number of items in the system
 
-    def __calculate_user_matrix(self, user_index: int, item_index: int, rating: float,
-                                mean_users: np.ndarray, mean_items: np.ndarray,) -> None:
+    def __calculate_delta(self, user_index: int, item_index: int, rating: float,
+                          mean_users: np.ndarray, mean_items: np.ndarray) -> np.ndarray:
+        """
+        Method for calculate the difference between the original rating matrix and the matrix
+        that was obtained at this point in time
+        """
+
         # similarity between user and item
         similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
         # get the difference between the true value of the rating and the approximate
-        delta = rating - mean_users[user_index] - mean_items[item_index] - similarity
+        return rating - mean_users[user_index] - mean_items[item_index] - similarity
+
+    def __calculate_user_matrix(self, user_index: int, item_index: int, delta: np.ndarray) -> None:
+        """
+        Method for finding a row of users matrix
+
+        Parameters
+        ----------
+        user_index: int
+
+        item_index: int
+
+        delta: numpy array
+            The difference between the original rating matrix and the matrix that was obtained at this point in time
+        """
 
         # the value of regularization for the user
         user_reg = self.__user_regularization * np.sum(self.__user_matrix[user_index]) / self.__dimension
         # changing hidden variables for the user
         self.__user_matrix[user_index] += self.__rate * (delta * self.__item_matrix[item_index] - user_reg)
 
-    def __calculate_item_matrix(self, user_index: int, item_index: int, rating: float,
-                                mean_users: np.ndarray, mean_items: np.ndarray,) -> None:
-        # similarity between user and item
-        similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
-        # get the difference between the true value of the rating and the approximate
-        delta = rating - mean_users[user_index] - mean_items[item_index] - similarity
+    def __calculate_item_matrix(self, user_index: int, item_index: int, delta: np.ndarray) -> None:
+        """
+        Method for finding a row of items matrix
+
+        Parameters
+        ----------
+        user_index: int
+
+        item_index: int
+
+        delta: numpy array
+            The difference between the original rating matrix and the matrix that was obtained at this point in time
+        """
 
         # the value of regularization for the item
         item_reg = self.__item_regularization * np.sum(self.__item_matrix[item_index]) / self.__dimension
@@ -109,8 +135,9 @@ class StochasticLatentFactorModel(RecommenderSystem, DebugInterface):
                 item_index: int = items_indices[index]
                 rating: float = ratings[index]
 
-                self.__calculate_user_matrix(user_index, item_index, rating, mean_users, mean_items)
-                self.__calculate_item_matrix(user_index, item_index, rating, mean_users, mean_items)
+                delta = self.__calculate_delta(user_index, item_index, rating, mean_users, mean_items)
+                self.__calculate_user_matrix(user_index, item_index, delta)
+                self.__calculate_item_matrix(user_index, item_index, delta)
 
             self.__set_debug_information(is_debug, self.__user_matrix, self.__item_matrix, mean_users, mean_items,
                                          users_indices, items_indices, ratings)

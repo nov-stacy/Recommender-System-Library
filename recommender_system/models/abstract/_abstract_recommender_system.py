@@ -71,5 +71,4 @@ class RecommenderSystem(ABC):
         -------
         list of indices: numpy array
         """
-        ratings = self.predict_ratings(user_index)
-        calculate_issue_ranked_list(ratings, k_items=items_count)
+        return calculate_issue_ranked_list(self.predict_ratings(user_index), k_items=items_count)

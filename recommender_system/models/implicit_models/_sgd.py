@@ -2,10 +2,12 @@ import numpy as np
 from scipy import sparse as sparse
 from tqdm import tqdm
 
-from recommender_system.models.abstract_recommender_system import RecommenderSystem
+from recommender_system.functional_errors import calculate_error_for_implicit_models
+from recommender_system.models.abstract import RecommenderSystem
+from recommender_system.models.abstract import DebugInterface
 
 
-class StochasticImplicitLatentFactorModel(RecommenderSystem):
+class StochasticImplicitLatentFactorModel(RecommenderSystem, DebugInterface):
     """
     A model based on the fact that any signals from the user are better than their absence.
 
@@ -31,6 +33,8 @@ class StochasticImplicitLatentFactorModel(RecommenderSystem):
             Regularization member for item data
         """
 
+        super(DebugInterface, self).__init__(calculate_error_for_implicit_models)
+
         self.__dimension: int = dimension
         self.__rate: float = learning_rate
         self.__influence: float = influence_regularization
@@ -42,6 +46,32 @@ class StochasticImplicitLatentFactorModel(RecommenderSystem):
 
         self.__users_count: int = 0  # number of users in the system
         self.__items_count: int = 0  # number of items in the system
+
+    def __calculate_delta(self, user_index: int, item_index: int, user_ratings: np.ndarray, ii_user: np.ndarray,
+                          mean_ii_user: np.ndarray, mean_ii_item: np.ndarray) -> np.ndarray:
+        """
+        Method for calculate the difference between the original rating matrix and the matrix
+        that was obtained at this point in time
+        """
+
+        # similarity between user and item
+        similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
+
+        # get the difference between the true value of the rating and the approximate
+        return (ii_user[item_index] - mean_ii_user[user_index] - mean_ii_item[item_index] - similarity) * \
+               (1 + self.__influence * user_ratings[item_index])
+
+    def __calculate_user_matrix(self, user_index: int, item_index: int, delta: np.ndarray) -> None:
+        # the value of regularization for the user
+        user_reg = self.__user_regularization * np.sum(self.__user_matrix[user_index]) / self.__dimension
+        # changing hidden variables for the user
+        self.__user_matrix[user_index] += self.__rate * (delta * self.__item_matrix[item_index] - user_reg)
+
+    def __calculate_item_matrix(self, user_index: int, item_index: int, delta: np.ndarray) -> None:
+        # the value of regularization for the item
+        item_reg = self.__item_regularization * np.sum(self.__item_matrix[item_index]) / self.__dimension
+        # changing hidden variables for the item
+        self.__item_matrix[item_index] += self.__rate * (delta * self.__user_matrix[user_index] - item_reg)
 
     def __use_stochastic_gradient_descent(self, data: sparse.coo_matrix, epochs: int,
                                           mean_ii_user: np.ndarray,
@@ -62,7 +92,7 @@ class StochasticImplicitLatentFactorModel(RecommenderSystem):
 
         """
 
-        for epoch in tqdm(range(epochs)):
+        for _ in tqdm(range(epochs)):
 
             # random users
             users_indices = np.arange(self.__users_count)
@@ -81,22 +111,10 @@ class StochasticImplicitLatentFactorModel(RecommenderSystem):
 
                 for item_index in items_indices:
 
-                    # similarity between user and item
-                    similarity = self.__user_matrix[user_index] @ self.__item_matrix[item_index].T
-
-                    # get the difference between the true value of the rating and the approximate
-                    delta = (ii_user[item_index] - mean_ii_user[user_index] -
-                             mean_ii_item[item_index] - similarity) * (1 + self.__influence * user_ratings[item_index])
-
-                    # the value of regularization for the user
-                    user_reg = self.__user_regularization * np.sum(self.__user_matrix[user_index]) / self.__dimension
-                    # changing hidden variables for the user
-                    self.__user_matrix[user_index] += self.__rate * (delta * self.__item_matrix[item_index] - user_reg)
-
-                    # the value of regularization for the item
-                    item_reg = self.__item_regularization * np.sum(self.__item_matrix[item_index]) / self.__dimension
-                    # changing hidden variables for the item
-                    self.__item_matrix[item_index] += self.__rate * (delta * self.__user_matrix[user_index] - item_reg)
+                    delta = self.__calculate_delta(user_index, item_index, user_ratings, ii_user, mean_ii_user,
+                                                   mean_ii_item)
+                    self.__calculate_user_matrix(user_index, item_index, delta)
+                    self.__calculate_item_matrix(user_index, item_index, delta)
 
     def __start_train(self, data: sparse.coo_matrix, epochs: int):
         """
