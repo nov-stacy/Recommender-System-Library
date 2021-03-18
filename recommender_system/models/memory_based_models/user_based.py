@@ -1,5 +1,3 @@
-import typing as tp
-
 import numpy as np
 from scipy import sparse as sparse
 from scipy.stats import pearsonr
@@ -11,6 +9,7 @@ from recommender_system.models.abstract_recommender_system import RecommenderSys
 class UserBasedCollaborativeFilteringModel(RecommenderSystem):
     """
     Recommender system based on distance between users and what neighbors like
+
     Realization
     -----------
     Determine the nearest neighbors for the user and determine ratings
@@ -25,47 +24,38 @@ class UserBasedCollaborativeFilteringModel(RecommenderSystem):
             The number of closest neighbors that must be taken into account
             when predicting an estimate for an item
         """
-        self.__knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neigbors + 1)
-        self.__data: sparse.coo_matrix = np.array([])
-        self.__mean_items: np.ndarray = np.array([])
-        self.__mean_users: np.ndarray = np.array([])
+        self.__data: sparse.coo_matrix = np.array([])  # matrix for storing all data
+        self.__mean_items: np.ndarray = np.array([])  # matrix for the average ratings of each user
+        self.__mean_users: np.ndarray = np.array([])  # matrix for the average ratings of each item
 
-    def __calculate_correlation_coefficients(self, user_index: int, users_indexes: tp.List[int]) -> np.ndarray:
-        """
-        Method to calculate correlation coefficients between users
-        Parameters
-        ----------
-        user_index: int
-            Current user
-        users_indexes: array of ints
-            Users ratio with which to get
-        Returns
-        -------
-        Correlation coefficients: numpy array
-        """
-        return np.vectorize(lambda index: pearsonr(self.__data.getrow(user_index).toarray()[0],
-                                                   self.__data.getrow(index).toarray()[0])[0])(users_indexes)
+        # algorithm for determining the nearest neighbors
+        self.__knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neigbors + 1)
 
     def train(self, data: sparse.coo_matrix) -> 'RecommenderSystem':
-        self.__data = data
-        self.__mean_items = self.__data.mean(axis=0).transpose()
-        self.__mean_users = self.__data.mean(axis=1)
+        self.__data: sparse.coo_matrix = data
+        self.__mean_items: np.ndarray = self.__data.mean(axis=0).transpose()
+        self.__mean_users: np.ndarray = self.__data.mean(axis=1)
         self.__knn.fit(self.__data)
         return self
 
     def predict_ratings(self, user_index: int) -> np.ndarray:
-        # find a list of k nearest neigbors of current user
-        nearest_users = self.__knn.kneighbors(self.__data.getrow(user_index), return_distance=False)[0]
+        # get a list of k nearest neigbors of current user
+        nearest_users: np.ndarray = self.__knn.kneighbors(self.__data.getrow(user_index), return_distance=False)[0]
         nearest_users = nearest_users[nearest_users != user_index]
 
         # get correlation coefficient and change nan values
-        coeffs = np.nan_to_num(self.__calculate_correlation_coefficients(user_index, nearest_users))
+        coeffs: np.ndarray = np.nan_to_num(
+            np.vectorize(
+                lambda index: pearsonr(self.__data.getrow(user_index).toarray()[0],
+                                       self.__data.getrow(index).toarray()[0])[0]
+            )(nearest_users)
+        )
 
         # get mean ratings of items and mean ratings given by users
-        mean_users = self.__mean_users[nearest_users]
+        mean_users: np.ndarray = self.__mean_users[nearest_users]
 
         # get ratings given by nearest users to product data
-        ratings_users = sparse.vstack([self.__data.getrow(index) for index in nearest_users])
+        ratings_users: sparse.coo_matrix = sparse.vstack([self.__data.getrow(index) for index in nearest_users])
 
         # calculate ratings
         numerator = np.sum(np.multiply(ratings_users - mean_users, coeffs.reshape((nearest_users.shape[0], 1))), axis=0)
