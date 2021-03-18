@@ -9,6 +9,14 @@ from recommender_system.models.abstract_recommender_system import RecommenderSys
 
 
 class ItemBasedCollaborativeFilteringModel(RecommenderSystem):
+    """
+    Recommender system based on similarities between items
+
+    Realization
+    -----------
+    Determine the nearest neighbors for the items, which the user marked, and get the items,
+    which are closest to the original ones
+    """
 
     def __init__(self, k_nearest_neigbors: int) -> None:
         """
