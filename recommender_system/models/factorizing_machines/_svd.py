@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.sparse as sparse
 from scipy.sparse.linalg import svds
-from recommender_system.models.abstract import RecommenderSystem
+from recommender_system.models.abstract import OneEpochAbstractRecommenderSystem
 
 
-class SingularValueDecompositionModel(RecommenderSystem):
+class SingularValueDecompositionModel(OneEpochAbstractRecommenderSystem):
     """
     Recommender system based on singular value decomposition.
 
@@ -21,18 +21,17 @@ class SingularValueDecompositionModel(RecommenderSystem):
         dimension: int
             The number of singular values to keep
         """
-        self.__dimension: int = dimension
-        self.__first_matrix: np.ndarray = np.array([])
-        self.__second_matrix: np.ndarray = np.array([])
-        self.__singular_values: np.ndarray = np.array([])
-        self.__data: sparse.coo_matrix = sparse.eye(0)
-
-    def train(self, data: sparse.coo_matrix) -> 'SingularValueDecompositionModel':
-        csr_data: sparse.csr_matrix = data.tocsr()
-        self.__first_matrix, self.__singular_values, self.__second_matrix = svds(csr_data, k=self.__dimension)
-        self.__data = data.copy()
-        return self
+        self._dimension: int = dimension
+        self._first_matrix: np.ndarray = np.array([])
+        self._second_matrix: np.ndarray = np.array([])
+        self._singular_values: np.ndarray = np.array([])
 
     def predict_ratings(self, user_index) -> np.ndarray:
-        return self.__first_matrix[user_index] @ np.diag(self.__singular_values) @ self.__second_matrix
+        return self._first_matrix[user_index] @ np.diag(self._singular_values) @ self._second_matrix
 
+    def train(self, data: sparse.coo_matrix) -> 'SingularValueDecompositionModel':
+        self._first_matrix, self._singular_values, self._second_matrix = svds(data.tocsr(), k=self._dimension)
+        return self
+
+    def __str__(self) -> str:
+        return f'SVD [dimension = {self._dimension}]'

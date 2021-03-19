@@ -1,5 +1,10 @@
-from ._abstract_recommender_system import RecommenderSystem
-from ._debug import DebugInterface
+from ._abstract_recommender_system import AbstractRecommenderSystem
+from ._embeddings_recommender_system import EmbeddingsRecommenderSystem
+from ._one_epoch_recommender_system import OneEpochAbstractRecommenderSystem
 
 
-__all__ = ['RecommenderSystem', 'DebugInterface']
+__all__ = [
+    'AbstractRecommenderSystem',
+    'EmbeddingsRecommenderSystem',
+    'OneEpochAbstractRecommenderSystem'
+]

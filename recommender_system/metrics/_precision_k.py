@@ -6,10 +6,17 @@ def __precision_for_one_user(true_user_pref_indices: np.ndarray,
                              predicted_user_pref_indices: np.ndarray) -> float:
     """
     Method to calculate Precision@k for one user
-    (Recall at k is the proportion of relevant items found in the top-k recommendations)
-    :param true_user_pref_indices: indices of items, about which it is known that they was liked by the user
-    :param predicted_user_pref_indices: item indices that were recommended to the user
-    :return: Precision@k for user
+
+    Parameters
+    ----------
+    true_user_pref_indices: numpy array
+        Indices of items, about which it is known that they was liked by the user
+    predicted_user_pref_indices: numpy array
+        Item indices that were recommended to the user
+
+    Returns
+    -------
+    Precision@k for user: float
     """
     if true_user_pref_indices.dtype != np.int or predicted_user_pref_indices.dtype != np.int:
         raise ValueError('Arrays should store indices')
@@ -29,9 +36,17 @@ def precision_k(true_preferences_indices: tp.List[np.ndarray],
     """
     Method to calculate Precision@k for all users
     (Precision at k is the proportion of recommended items in the top-k set that are relevant)
-    :param true_preferences_indices: indices of items, about which it is known that they was liked by the users
-    :param predicted_preferences_indices: item indices that were recommended to the users
-    :return: mean of Precision@k for all users
+
+    Parameters
+    ----------
+    true_preferences_indices: array of numpy arrays
+        Indices of items, about which it is known that they was liked by the users
+    predicted_preferences_indices: array of numpy arrays
+        Item indices that were recommended to the users
+
+    Returns
+    -------
+    Mean of Precision@k for all users: float
     """
 
     if len(true_preferences_indices) != len(predicted_preferences_indices):
