@@ -97,9 +97,9 @@ def main():
     epochs = {'epochs': 30}
 
     experiments = [
-        (MATRIX_10, UserBasedModel, 'k_nearest_neigbors', params_10, {}, {}, 'UserBased'),
-        (MATRIX_50, UserBasedModel, 'k_nearest_neigbors', params_50, {}, {}, 'UserBased'),
-        (MATRIX_100, UserBasedModel, 'k_nearest_neigbors', params_100, {}, {}, 'UserBased'),
+        (MATRIX_10, UserBasedModel, 'k_nearest_neighbours', params_10, {}, {}, 'UserBased'),
+        (MATRIX_50, UserBasedModel, 'k_nearest_neighbours', params_50, {}, {}, 'UserBased'),
+        (MATRIX_100, UserBasedModel, 'k_nearest_neighbours', params_100, {}, {}, 'UserBased'),
         
         (MATRIX_10, AlternatingLeastSquaresModel, 'dimension', params_10, {}, epochs, 'ALS'),
         (MATRIX_50, AlternatingLeastSquaresModel, 'dimension', params_50, {}, epochs, 'ALS'),

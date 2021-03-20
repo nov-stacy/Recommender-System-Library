@@ -22,11 +22,11 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
     def _correlation(first, second):
         return 1 - pearsonr(first.toarray()[0], second.toarray()[0])[0]
 
-    def __init__(self, k_nearest_neigbors: int) -> None:
+    def __init__(self, k_nearest_neighbours: int) -> None:
         """
         Parameters
         ----------
-        k_nearest_neigbors:
+        k_nearest_neighbours:
             The number of closest neighbors that must be taken into account
             when predicting an estimate for an item
         """
@@ -35,8 +35,8 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
         self._mean_users: np.ndarray = np.array([])  # matrix for the average ratings of each item
 
         # algorithm for determining the nearest neighbors
-        self._k_nearest_neigbors = k_nearest_neigbors
-        self._knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neigbors + 1, metric=self._correlation)
+        self._k_nearest_neighbours = k_nearest_neighbours
+        self._knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neighbours + 1, metric=self._correlation)
 
     def train(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
         self._data: sparse.coo_matrix = data
@@ -52,12 +52,12 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
         # getting the indices of all items that the user has viewed
         items: np.ndarray = np.where(self._data.getrow(user_index).toarray()[0] != 0)[0]
 
-        # get a list of k nearest neigbors of items
+        # get a list of k nearest neighbours of items
         nearest_items: tp.Dict[int, float] = dict()
 
         for item_index in items:
 
-            # get a list of k nearest neigbors of current item
+            # get a list of k nearest neighbours of current item
             distances, items = self._knn.kneighbors(self._data.getcol(item_index).transpose(), return_distance=True)
             distances = distances[0][items[0] != item_index]
             items = items[0][items[0] != item_index]
@@ -76,4 +76,4 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
         return np.array(list(zip(*sorted_items))[0])
 
     def __str__(self) -> str:
-        return f'Item based [k_nearest_neigbors = {self._k_nearest_neigbors}]'
+        return f'Item based [k_nearest_neighbours = {self._k_nearest_neighbours}]'

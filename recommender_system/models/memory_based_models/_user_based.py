@@ -16,11 +16,11 @@ class UserBasedModel(OneEpochAbstractRecommenderSystem):
     based on what they like and the distance to them
     """
 
-    def __init__(self, k_nearest_neigbors: int) -> None:
+    def __init__(self, k_nearest_neighbours: int) -> None:
         """
         Parameters
         ----------
-        k_nearest_neigbors:
+        k_nearest_neighbours:
             The number of closest neighbors that must be taken into account
             when predicting an estimate for an item
         """
@@ -29,8 +29,8 @@ class UserBasedModel(OneEpochAbstractRecommenderSystem):
         self._mean_users: np.ndarray = np.array([])  # matrix for the average ratings of each item
 
         # algorithm for determining the nearest neighbors
-        self._k_nearest_neigbors = k_nearest_neigbors
-        self._knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neigbors + 1)
+        self._k_nearest_neighbours = k_nearest_neighbours
+        self._knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neighbours + 1)
 
     def train(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
         self._data: sparse.coo_matrix = data
@@ -41,7 +41,7 @@ class UserBasedModel(OneEpochAbstractRecommenderSystem):
 
     def predict_ratings(self, user_index: int) -> np.ndarray:
 
-        # get a list of k nearest neigbors of current user
+        # get a list of k nearest neighbours of current user
         nearest_users: np.ndarray = self._knn.kneighbors(self._data.getrow(user_index), return_distance=False)[0]
         nearest_users = nearest_users[nearest_users != user_index]
 
@@ -66,4 +66,4 @@ class UserBasedModel(OneEpochAbstractRecommenderSystem):
         return np.squeeze(np.asarray(self._mean_items + numerator.transpose() / denominator))
 
     def __str__(self) -> str:
-        return f'User based [k_nearest_neigbors = {self._k_nearest_neigbors}]'
+        return f'User based [k_nearest_neighbours = {self._k_nearest_neighbours}]'
