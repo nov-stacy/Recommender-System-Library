@@ -2,7 +2,7 @@ import scipy.sparse as sparse
 import pandas as pd
 import numpy as np
 
-from recommender_system.extra_functions.work_with_train_data import construct_coo_matrix_from_data
+from recommender_system_library.extra_functions.work_with_train_data import construct_coo_matrix_from_data
 
 
 def read_data_from_csv(path: str) -> pd.DataFrame:
