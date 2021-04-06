@@ -53,6 +53,7 @@ def construct_coo_matrix_from_data(rows_indices: np.ndarray, columns_indices: np
     ValueError
         If indices and data are not 1D arrays
         If indices and data don't  have same shape
+        If indices don't have int values or data don't have int/float values
         If shape don't have two non-negative values
 
     Returns
@@ -68,6 +69,9 @@ def construct_coo_matrix_from_data(rows_indices: np.ndarray, columns_indices: np
 
     if not(rows_indices.shape == columns_indices.shape == data.shape):
         raise ValueError('Indices and data need to have same shape')
+
+    if rows_indices.dtype != np.int or columns_indices.dtype != np.int or data.dtype not in [np.int, np.float]:
+        raise ValueError('Indices need to have int values and data need to have int/float values')
 
     if type(shape) not in [tuple, list]:
         raise TypeError('Shape need to nave list or tuple format')
