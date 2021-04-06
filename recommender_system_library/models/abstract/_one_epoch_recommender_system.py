@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from scipy import sparse
 
-from recommender_system.models.abstract import AbstractRecommenderSystem
+from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
 class OneEpochAbstractRecommenderSystem(AbstractRecommenderSystem, ABC):
@@ -13,7 +13,7 @@ class OneEpochAbstractRecommenderSystem(AbstractRecommenderSystem, ABC):
     """
 
     @abstractmethod
-    def train(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
+    def fit(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
         """
         Method for training a model
 
@@ -28,7 +28,7 @@ class OneEpochAbstractRecommenderSystem(AbstractRecommenderSystem, ABC):
         Current instance of class : RecommenderSystem
         """
 
-    def retrain(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
+    def refit(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
         """
         Method for retrain model
 
@@ -43,7 +43,7 @@ class OneEpochAbstractRecommenderSystem(AbstractRecommenderSystem, ABC):
         Current instance of class: RecommenderSystem
         """
 
-        return self.train(data)
+        return self.fit(data)
 
     @abstractmethod
     def predict_ratings(self, user_index: int) -> np.ndarray:

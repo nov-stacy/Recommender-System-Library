@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import sparse as sparse
 
-from recommender_system.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
 
 
 class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
@@ -102,7 +102,7 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
         # changing hidden variables for the item
         self._item_matrix[item_index] += self.__rate * (delta * self._user_matrix[user_index] - item_reg)
 
-    def _before_train(self, data: sparse.coo_matrix) -> None:
+    def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data: sparse.coo_matrix = data
 
         # determining the average values of implicit interest for users and items

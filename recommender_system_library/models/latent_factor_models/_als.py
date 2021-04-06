@@ -1,7 +1,7 @@
 from scipy import sparse as sparse
 from scipy.sparse.linalg import cg as solve
 
-from recommender_system.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
 
 
 class AlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
@@ -80,7 +80,7 @@ class AlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
             # solve Ax = B
             self._item_matrix[item_index] = solve(user_matrix, users_ratings)[0]
 
-    def _before_train(self, data: sparse.coo_matrix) -> None:
+    def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data
 
     def _train_one_epoch(self) -> None:

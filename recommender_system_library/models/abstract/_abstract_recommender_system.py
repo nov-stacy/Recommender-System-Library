@@ -9,7 +9,7 @@ class AbstractRecommenderSystem(ABC):
     """
 
     @abstractmethod
-    def train(self, *args) -> 'AbstractRecommenderSystem':
+    def fit(self, *args) -> 'AbstractRecommenderSystem':
         """
         Method for training a model
 
@@ -19,7 +19,7 @@ class AbstractRecommenderSystem(ABC):
         """
 
     @abstractmethod
-    def retrain(self, *args) -> 'AbstractRecommenderSystem':
+    def refit(self, *args) -> 'AbstractRecommenderSystem':
         """
         Method for retrain model
 

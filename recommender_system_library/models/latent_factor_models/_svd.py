@@ -29,7 +29,7 @@ class SingularValueDecompositionModel(OneEpochAbstractRecommenderSystem):
     def predict_ratings(self, user_index) -> np.ndarray:
         return self._first_matrix[user_index] @ np.diag(self._singular_values) @ self._second_matrix
 
-    def train(self, data: sparse.coo_matrix) -> 'SingularValueDecompositionModel':
+    def fit(self, data: sparse.coo_matrix) -> 'SingularValueDecompositionModel':
         self._first_matrix, self._singular_values, self._second_matrix = svds(data.tocsr(), k=self._dimension)
         return self
 

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import sparse as sparse
 
-from recommender_system.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
 
 
 class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
@@ -75,7 +75,7 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         denominator = self._user_matrix[:, index].T @ self._user_matrix[:, index]
         self._user_matrix[:, index] = self._user_matrix[:, index].T @ delta / denominator
 
-    def _before_train(self, data: sparse.coo_matrix) -> None:
+    def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data
 
     def _train_one_epoch(self) -> None:

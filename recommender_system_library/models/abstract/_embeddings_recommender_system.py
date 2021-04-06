@@ -6,7 +6,7 @@ import numpy as np
 from scipy import sparse
 from tqdm import tqdm
 
-from recommender_system.models.abstract import AbstractRecommenderSystem
+from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
 class EmbeddingDebug:
@@ -134,7 +134,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         return self._user_matrix[user_index] @ self._item_matrix.T
 
     @abstractmethod
-    def _before_train(self, data: sparse.coo_matrix) -> None:
+    def _before_fit(self, data: sparse.coo_matrix) -> None:
         """
         Method that is called before training starts to save all the data that is used during training
 
@@ -151,7 +151,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         Method for teaching a method during a single epoch
         """
 
-    def _train(self, epochs: int) -> None:
+    def _fit(self, epochs: int) -> None:
         """
         Method for training a model
 
@@ -165,7 +165,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             self._train_one_epoch()
             self.debug_information.set(self)
 
-    def train(self, data: sparse.coo_matrix, epochs: int, is_debug: bool = False) -> 'EmbeddingsRecommenderSystem':
+    def fit(self, data: sparse.coo_matrix, epochs: int, is_debug: bool = False) -> 'EmbeddingsRecommenderSystem':
         """
         Method for training a model
 
@@ -184,10 +184,11 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         Current instance of class: EmbeddingsRecommenderSystem
         """
 
+        self._is_trained = True
         self.debug_information.update(is_debug)
         self._create_user_item_matrix(data)
-        self._before_train(data)
-        self._train(epochs)
+        self._before_fit(data)
+        self._fit(epochs)
 
         return self
 
@@ -209,7 +210,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
 
         return self.predict_ratings(user_index).argsort()[::-1][:items_count]
 
-    def retrain(self, data: sparse.coo_matrix, epochs: int = 100) -> 'EmbeddingsRecommenderSystem':
+    def refit(self, data: sparse.coo_matrix, epochs: int = 100) -> 'EmbeddingsRecommenderSystem':
         """
         Method for retrain model
 
@@ -236,8 +237,8 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             matrix_part = np.random.randn(data.shape[1] - self._items_count, self._dimension)
             self._item_matrix = np.vstack((self._item_matrix, matrix_part))
 
-        self._before_train(data)
-        self._train(epochs)
+        self._before_fit(data)
+        self._fit(epochs)
 
         return self
 

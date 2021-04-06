@@ -3,7 +3,7 @@ from scipy import sparse as sparse
 from scipy.stats import pearsonr
 from sklearn.neighbors import NearestNeighbors
 
-from recommender_system.models.abstract import OneEpochAbstractRecommenderSystem
+from recommender_system_library.models.abstract import OneEpochAbstractRecommenderSystem
 
 
 class UserBasedModel(OneEpochAbstractRecommenderSystem):
@@ -32,7 +32,7 @@ class UserBasedModel(OneEpochAbstractRecommenderSystem):
         self._k_nearest_neighbours = k_nearest_neighbours
         self._knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neighbours + 1)
 
-    def train(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
+    def fit(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
         self._data: sparse.coo_matrix = data
         self._mean_items: np.ndarray = self._data.mean(axis=0).transpose()
         self._mean_users: np.ndarray = self._data.mean(axis=1)
