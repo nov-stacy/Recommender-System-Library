@@ -5,24 +5,34 @@ import numpy as np
 from recommender_system_library.extra_functions.work_with_train_data import construct_coo_matrix_from_data
 
 
-def read_data_from_csv(path: str) -> pd.DataFrame:
+def read_data_from_csv(path_to_file: str) -> pd.DataFrame:
     """
     Method to load data from file with table view
 
     Parameters
     ----------
-    path: str
+    path_to_file: str
         Path to file with data
+
+    Raises
+    ------
+    TypeError
+        If parameters don't have string format
+    FileNotFoundError
+        If file doesn't exist
 
     Returns
     -------
     table: pandas DataFrame
     """
 
-    return pd.read_csv(path)
+    if type(path_to_file) != str:
+        raise TypeError('Path should have string format')
+
+    return pd.read_csv(path_to_file)
 
 
-def write_data_to_npz(sparse_matrix: sparse.coo_matrix, path: str) -> None:
+def write_data_to_npz(sparse_matrix: sparse.coo_matrix, path_to_file: str) -> None:
     """
     Method to save sparse matrix in file
 
@@ -30,14 +40,28 @@ def write_data_to_npz(sparse_matrix: sparse.coo_matrix, path: str) -> None:
     ----------
     sparse_matrix: sparse matrix
         Sparse data matrix
-    path: str
+    path_to_file: str
         Path to file
+
+    Raises
+    ------
+    TypeError
+        If parameters don't have needed format
+    FileNotFoundError
+        If in path some directories don't exist
     """
 
-    sparse.save_npz(path, sparse_matrix)
+    if type(sparse_matrix) != sparse.coo_matrix:
+        raise TypeError('Matrix should have sparse format')
+
+    if type(path_to_file) != str:
+        raise TypeError('Path should have string format')
+
+    sparse.save_npz(path_to_file, sparse_matrix)
 
 
-def generate_sparse_matrix(table: pd.DataFrame, column_user_id, column_item_id, column_rating) -> sparse.coo_matrix:
+def generate_sparse_matrix(table: pd.DataFrame, column_user_id: str, column_item_id: str,
+                           column_rating: str) -> sparse.coo_matrix:
     """
     Method for generating a two-dimensional matrix user - item from table
 
@@ -52,10 +76,26 @@ def generate_sparse_matrix(table: pd.DataFrame, column_user_id, column_item_id, 
     column_rating: str
         The name of the column where the ratings are stored
 
+    Raises
+    ------
+    ValueError
+        If table don't contain the columns
+    TypeError
+        If parameters don't have needed format
+
     Returns
     -------
     matrix: sparse matrix
     """
+
+    if type(table) != pd.DataFrame:
+        raise TypeError('Table should have pandas table format')
+
+    if type(column_user_id) != str or type(column_item_id) != str or type(column_rating) != str:
+        raise TypeError('Columns should have string format')
+
+    if column_user_id not in table or column_item_id not in table or column_rating not in table:
+        raise ValueError('Columns should be in table')
 
     # unique user ID and transformer from them to indices
     user_unique_ids = table[column_user_id].unique()

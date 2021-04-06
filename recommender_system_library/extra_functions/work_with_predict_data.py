@@ -13,16 +13,30 @@ def calculate_barrier_value(ratings: np.ndarray, probability: float) -> float:
     probability: float
         Float value between [0, 1]
 
+    Raises
+    ------
+    TypeError
+        If Parameters don't have needed format
+    ValueError:
+        If probability not in [0, 1]
+        If ratings is not 1D array
+
     Returns
     -------
     barrier value: float
     """
 
+    if type(ratings) != np.ndarray:
+        raise TypeError('Ratings should have numpy array format')
+
+    if type(probability) != float:
+        raise TypeError('Probability should have float format')
+
     if len(ratings.shape) != 1:
         raise ValueError('Ratings need to be 1D array')
 
     if probability > 1 or probability < 0:
-        raise ValueError('probability should be in [0, 1]')
+        raise ValueError('Probability should be in [0, 1]')
 
     return np.quantile(ratings, 1 - probability)
 
@@ -35,23 +49,37 @@ def calculate_issue_ranked_list(ratings: np.ndarray,
 
     Parameters
     ----------
-    ratings: numpy arrray
+    ratings: numpy array
         Array of ratings which predicted to user
     k_items: [int, None]
         Number of items to recommend
     barrier_value: [float, None]
         Value of rating greater than or equal to which to recommend
 
+    Raises
+    ------
+    TypeError
+        If parameters don't have needed format
+    ValueError
+        If both of optional parameters or None or not None
+        If ratings is not 1D array
+
     Returns
     -------
     array of indices (sorted by rating values): numpy array
     """
 
-    if len(ratings.shape) != 1:
-        raise ValueError('Ratings need to be 1D array')
+    if type(ratings) != np.ndarray:
+        raise TypeError('Ratings should have numpy array format')
 
     if sum(value is not None for value in [k_items, barrier_value]) != 1:
         raise ValueError('You should assign only one of the arguments non-None')
+
+    if not(type(k_items) == int or type(barrier_value) == float):
+        raise TypeError('k_items should have int format or barrier_value should have float format')
+
+    if len(ratings.shape) != 1:
+        raise ValueError('Ratings need to be 1D array')
 
     # indexes sorted in descending order of rating value and base mask
     sort_indices = ratings.argsort()[::-1]
