@@ -68,7 +68,7 @@ class EmbeddingDebug:
 class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
     """
     Abstract class for recommender system that builds recommendations for the user based on the fact that all users and
-    items are defined by vectors (categories of interests). For experiments, each component of such a vector can be
+    items are defined by vectors (categories of interests). For example, each component of such a vector can be
     interpreted as the degree of belonging of a given product to a certain category or
     the degree of interest of a given user in this category.
     Such vectors are representations that allow you to reduce entities into a single vector space.

@@ -4,10 +4,10 @@ import warnings
 from scipy import sparse
 import matplotlib.pyplot as plt
 
-from recommender_system.extra_functions.work_with_train_data import read_data_from_npz_file
-from recommender_system.models.implicit_models import *
-from recommender_system.models.latent_factor_models import *
-from recommender_system.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.extra_functions.work_with_train_data import read_data_from_npz_file
+from recommender_system_library.models.implicit_models import *
+from recommender_system_library.models.latent_factor_models import *
+from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
 
 
 PACKAGE = 'result_plot/debug_experiment'

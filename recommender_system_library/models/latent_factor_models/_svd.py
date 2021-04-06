@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sparse
 from scipy.sparse.linalg import svds
-from recommender_system.models.abstract import OneEpochAbstractRecommenderSystem
+from recommender_system_library.models.abstract import OneEpochAbstractRecommenderSystem
 
 
 class SingularValueDecompositionModel(OneEpochAbstractRecommenderSystem):

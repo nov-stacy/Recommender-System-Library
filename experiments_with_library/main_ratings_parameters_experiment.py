@@ -4,13 +4,13 @@ import warnings
 from scipy import sparse
 import matplotlib.pyplot as plt
 
-from recommender_system.extra_functions.work_with_predict_data import calculate_issue_ranked_list
-from recommender_system.extra_functions.work_with_train_data import read_data_from_npz_file, get_train_data
-from recommender_system.metrics import *
-from recommender_system.models.implicit_models import *
-from recommender_system.models.latent_factor_models import *
-from recommender_system.models.memory_based_models import *
-from recommender_system.models.abstract import AbstractRecommenderSystem
+from recommender_system_library.extra_functions.work_with_predict_data import calculate_issue_ranked_list
+from recommender_system_library.extra_functions.work_with_train_data import read_data_from_npz_file, get_train_data
+from recommender_system_library.metrics import *
+from recommender_system_library.models.implicit_models import *
+from recommender_system_library.models.latent_factor_models import *
+from recommender_system_library.models.memory_based_models import *
+from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
 PACKAGE = 'result_plot/ratings_parameters_experiment'
@@ -32,7 +32,7 @@ def get_indices(data: sparse.coo_matrix, model: AbstractRecommenderSystem, users
         predicted_ratings = model.predict_ratings(user_index)
         true_ratings = data.getrow(user_index).toarray()[0]
 
-        barrier_value = predicted_ratings.mean()
+        barrier_value = true_ratings.mean()
         true_indices.append(calculate_issue_ranked_list(predicted_ratings, barrier_value=barrier_value))
         predicted_indices.append(calculate_issue_ranked_list(true_ratings, barrier_value=barrier_value))
 

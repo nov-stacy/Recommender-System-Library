@@ -2,7 +2,7 @@ import warnings
 
 import pandas as pd
 
-from recommender_system.extra_functions import work_with_csv_data
+from recommender_system_library.extra_functions import work_with_csv_data
 
 
 def main(data_name: str, column_user_id: str, column_item_id: str, column_rating: str) -> None:
