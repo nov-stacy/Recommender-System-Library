@@ -1,7 +1,8 @@
-from recommender_system_api.backend.work_with_database import delete_system, delete_model_file
+from recommender_system_api.backend.work_with_models import delete_model, delete_thread
+
+__all__ = ['delete_recommender_system']
 
 
-def delete_recommender_system(system_id: int):
-
-    delete_system(system_id)
-    delete_model_file(system_id)
+def delete_recommender_system(system_id: int) -> None:
+    delete_thread(system_id)
+    delete_model(system_id)
