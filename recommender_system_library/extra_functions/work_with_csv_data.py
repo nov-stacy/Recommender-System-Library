@@ -2,7 +2,14 @@ import scipy.sparse as sparse
 import pandas as pd
 import numpy as np
 
-from recommender_system_library.extra_functions.work_with_train_data import construct_coo_matrix_from_data
+from recommender_system_library.extra_functions.work_with_train_data import construct_matrix_from_data
+
+
+__all__ = [
+    'read_data_from_csv',
+    'write_matrix_to_npz',
+    'generate_sparse_matrix'
+]
 
 
 def read_data_from_csv(path_to_file: str) -> pd.DataFrame:
@@ -18,8 +25,6 @@ def read_data_from_csv(path_to_file: str) -> pd.DataFrame:
     ------
     TypeError
         If parameters don't have string format
-    FileNotFoundError
-        If file doesn't exist
 
     Returns
     -------
@@ -32,7 +37,7 @@ def read_data_from_csv(path_to_file: str) -> pd.DataFrame:
     return pd.read_csv(path_to_file)
 
 
-def write_data_to_npz(sparse_matrix: sparse.coo_matrix, path_to_file: str) -> None:
+def write_matrix_to_npz(sparse_matrix: sparse.coo_matrix, path_to_file: str) -> None:
     """
     Method to save sparse matrix in file
 
@@ -47,8 +52,6 @@ def write_data_to_npz(sparse_matrix: sparse.coo_matrix, path_to_file: str) -> No
     ------
     TypeError
         If parameters don't have needed format
-    FileNotFoundError
-        If in path some directories don't exist
     """
 
     if type(sparse_matrix) != sparse.coo_matrix:
@@ -113,4 +116,4 @@ def generate_sparse_matrix(table: pd.DataFrame, column_user_id: str, column_item
     columns = np.array(table[column_item_id].apply(lambda user_id: dict_from_item_ids_to_indices[user_id]))
     data = np.array(table[column_rating])
 
-    return construct_coo_matrix_from_data(rows, columns, data, matrix_shape)
+    return construct_matrix_from_data(rows, columns, data, matrix_shape)

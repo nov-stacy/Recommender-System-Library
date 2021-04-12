@@ -7,18 +7,29 @@ from recommender_system_library.models.abstract import AbstractRecommenderSystem
 from recommender_system_library.models import *
 
 
-__models_dict: tp.Dict[str, AbstractRecommenderSystem.__class__] = frozendict({
-    'user_based_model': memory_based_models.UserBasedModel,
-    'item_based_model': memory_based_models.ItemBasedModel,
-    'latent_factor_als_model': latent_factor_models.AlternatingLeastSquaresModel,
-    'latent_factor_hals_model': latent_factor_models.HierarchicalAlternatingLeastSquaresModel,
-    'latent_factor_sgd_model': latent_factor_models.StochasticLatentFactorModel,
-    'latent_factor_svd_model': latent_factor_models.SingularValueDecompositionModel,
-    'implicit_sgd_model': implicit_models.StochasticImplicitLatentFactorModel
-})
+__all__ = [
+    'MODELS_NAMES',
+    'MODELS_CLASSES',
+    'create_model',
+    'save_model_to_file',
+    'get_model_from_file'
+]
 
 
-models_types = list(__models_dict.keys())
+MODELS_NAMES = tuple([
+    'user_based_model', 'item_based_model', 'latent_factor_als_model', 'latent_factor_hals_model',
+    'latent_factor_sgd_model', 'latent_factor_svd_model', 'implicit_sgd_model'
+])
+
+MODELS_CLASSES = tuple([
+    memory_based_models.UserBasedModel, memory_based_models.ItemBasedModel,
+    latent_factor_models.AlternatingLeastSquaresModel, latent_factor_models.HierarchicalAlternatingLeastSquaresModel,
+    latent_factor_models.StochasticLatentFactorModel, latent_factor_models.SingularValueDecompositionModel,
+    implicit_models.StochasticImplicitLatentFactorModel
+])
+
+
+__models_dict: tp.Dict[str, AbstractRecommenderSystem.__class__] = frozendict(zip(MODELS_NAMES, MODELS_CLASSES))
 
 
 def create_model(type_model: str, parameters: tp.Dict[str, tp.Any]) -> AbstractRecommenderSystem:
@@ -45,8 +56,8 @@ def create_model(type_model: str, parameters: tp.Dict[str, tp.Any]) -> AbstractR
     model: AbstractRecommenderSystem
     """
 
-    if type_model not in models_types:
-        raise KeyError('There is no such model')
+    if type_model not in MODELS_NAMES:
+        raise ValueError('There is no such model')
 
     return __models_dict[type_model](**parameters)
 
@@ -66,11 +77,9 @@ def save_model_to_file(model: AbstractRecommenderSystem, path_to_file: str) -> N
     ------
     TypeError
         If parameters don't have needed format
-    FileNotFoundError
-        If file doesn't exist
     """
 
-    if type(model) != AbstractRecommenderSystem:
+    if not isinstance(model, AbstractRecommenderSystem):
         raise TypeError('Model should have recommender system format')
 
     if type(path_to_file) != str:
@@ -95,8 +104,6 @@ def get_model_from_file(path_to_file: str) -> AbstractRecommenderSystem:
         If the file does not contain a model
     TypeError
         If parameters don't have string format
-    FileNotFoundError
-        If file doesn't exist
 
     Returns
     -------
@@ -106,11 +113,10 @@ def get_model_from_file(path_to_file: str) -> AbstractRecommenderSystem:
     if type(path_to_file) != str:
         raise TypeError('Path should have string format')
 
-    try:
-        with open(path_to_file, 'rb') as file:
-            model = pickle.load(file)
-    except TypeError:
+    with open(path_to_file, 'rb') as file:
+        model = pickle.load(file)
+
+    if not isinstance(model, AbstractRecommenderSystem):
         raise ValueError('There is no model in this file')
 
-    if type(model) != AbstractRecommenderSystem:
-        raise ValueError('There is no model in this file')
+    return model

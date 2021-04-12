@@ -1,9 +1,19 @@
+import json
+import pickle
+
 import scipy.sparse as sparse
 import numpy as np
 import typing as tp
 
 
-def read_data_from_npz_file(path_to_file: str) -> sparse.coo_matrix:
+__all__ = [
+    'read_matrix_from_file',
+    'construct_matrix_from_data',
+    'get_train_matrix'
+]
+
+
+def read_matrix_from_file(path_to_file: str) -> sparse.coo_matrix:
     """
     Method to load data from file with sparse view
 
@@ -16,8 +26,6 @@ def read_data_from_npz_file(path_to_file: str) -> sparse.coo_matrix:
     ------
     TypeError
         If parameters don't have needed format
-    FileNotFoundError
-        If file doesn't exist
 
     Returns
     -------
@@ -30,8 +38,8 @@ def read_data_from_npz_file(path_to_file: str) -> sparse.coo_matrix:
     return sparse.load_npz(path_to_file)
 
 
-def construct_coo_matrix_from_data(rows_indices: np.ndarray, columns_indices: np.ndarray,
-                                   data: np.ndarray, shape: tp.Tuple[int, int]) -> sparse.coo_matrix:
+def construct_matrix_from_data(rows_indices: np.ndarray, columns_indices: np.ndarray,
+                               data: np.ndarray, shape: tp.Tuple[int, int]) -> sparse.coo_matrix:
     """
     Method to generate sparse matrix from data
 
@@ -71,7 +79,7 @@ def construct_coo_matrix_from_data(rows_indices: np.ndarray, columns_indices: np
         raise ValueError('Indices and data need to have same shape')
 
     if rows_indices.dtype != np.int or columns_indices.dtype != np.int or data.dtype not in [np.int, np.float]:
-        raise ValueError('Indices need to have int values and data need to have int/float values')
+        raise TypeError('Indices need to have int values and data need to have int/float values')
 
     if type(shape) not in [tuple, list]:
         raise TypeError('Shape need to nave list or tuple format')
@@ -83,62 +91,12 @@ def construct_coo_matrix_from_data(rows_indices: np.ndarray, columns_indices: np
         raise TypeError('Shapes need have int format')
 
     if shape[0] < 0 or shape[1] < 0:
-        raise TypeError('Shape need to have non-negative values')
+        raise ValueError('Shape need to have non-negative values')
 
     return sparse.coo_matrix((data, (rows_indices, columns_indices)), shape=shape)
 
 
-def train_test_split(matrix: sparse.coo_matrix, proportion: float) -> tp.Tuple[sparse.coo_matrix, sparse.coo_matrix]:
-    """
-    Method to split data in train and test samples
-
-    Parameters
-    ----------
-    matrix: sparse matrix
-        2-D matrix, where rows are users, and columns are items and at the intersection
-        of a row and a column is the rating that this user has given to this item
-    proportion: float
-        The relative amount of data in the training dataset
-
-    Raises
-    ------
-    TypeError
-        If parameters don't have needed format
-    ValueError
-        If proportion is not in (0, 1)
-
-    Returns
-    -------
-    (train data, test data): (sparse matrix, sparse matrix)
-    """
-
-    if type(matrix) != sparse.coo_matrix:
-        raise TypeError('Matrix should have sparse format')
-
-    if type(proportion) != float:
-        raise TypeError('Proportion should have float format')
-
-    if proportion <= 0 or proportion >= 1:
-        raise ValueError('Proportion need to be in (0, 1)')
-
-    # get key matrix data: indices and values
-    row, col, data = matrix.row, matrix.col, matrix.data
-
-    # shuffle indices and split into two samples (train and test)
-    indices = np.arange(row.shape[0])
-    np.random.shuffle(indices)
-    index_train = int(indices.shape[0] * proportion)
-    indices_train, indices_test = indices[:index_train], indices[index_train:]
-
-    # get key matrix data about train and test samples
-    row_train, col_train, data_train = row[indices_train], col[indices_train], data[indices_train]
-    row_test, col_test, data_test = row[indices_test], col[indices_test], data[indices_test]
-
-    return sparse.coo_matrix((data_train, (row_train, col_train)), shape=matrix.shape), \
-           sparse.coo_matrix((data_test, (row_test, col_test)), shape=matrix.shape)
-
-
-def get_train_data(matrix: sparse.coo_matrix, proportion: float) -> sparse.coo_matrix:
+def get_train_matrix(matrix: sparse.coo_matrix, proportion: float) -> sparse.coo_matrix:
     """
     Method to get train data
 
@@ -155,7 +113,7 @@ def get_train_data(matrix: sparse.coo_matrix, proportion: float) -> sparse.coo_m
     TypeError
         If parameters don't have needed format
     ValueError
-        If proportion is not in (0, 1)
+        If proportion is not in [0, 1]
 
     Returns
     -------
@@ -165,11 +123,11 @@ def get_train_data(matrix: sparse.coo_matrix, proportion: float) -> sparse.coo_m
     if type(matrix) != sparse.coo_matrix:
         raise TypeError('Matrix should have sparse format')
 
-    if type(proportion) != float:
+    if type(proportion) not in [float, np.float64]:
         raise TypeError('Proportion should have float format')
 
-    if proportion <= 0 or proportion >= 1:
-        raise ValueError('Proportion need to be in (0, 1)')
+    if proportion < 0 or proportion > 1:
+        raise ValueError('Proportion need to be in [0, 1])')
 
     # get key matrix data: indices and values
     row, col, data = matrix.row, matrix.col, matrix.data
