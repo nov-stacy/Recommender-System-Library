@@ -37,9 +37,12 @@ class UserBasedModel(OneEpochAbstractRecommenderSystem):
         self._mean_items: np.ndarray = self._data.mean(axis=0).transpose()
         self._mean_users: np.ndarray = self._data.mean(axis=1)
         self._knn.fit(self._data)
+        self._is_trained = True
         return self
 
     def predict_ratings(self, user_index: int) -> np.ndarray:
+
+        self._is_predict()
 
         # get a list of k nearest neighbours of current user
         nearest_users: np.ndarray = self._knn.kneighbors(self._data.getrow(user_index), return_distance=False)[0]

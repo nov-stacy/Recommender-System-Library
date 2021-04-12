@@ -8,8 +8,18 @@ class AbstractRecommenderSystem(ABC):
     Abstract class for system of recommendations
     """
 
+    _is_trained = False
+
+    @property
+    def is_trained(self):
+        return self._is_trained
+
+    def _is_predict(self):
+        if not self._is_trained:
+            raise RuntimeError('Model should be trained')
+
     @abstractmethod
-    def fit(self, *args) -> 'AbstractRecommenderSystem':
+    def fit(self, *args, **kwargs) -> 'AbstractRecommenderSystem':
         """
         Method for training a model
 
@@ -19,7 +29,7 @@ class AbstractRecommenderSystem(ABC):
         """
 
     @abstractmethod
-    def refit(self, *args) -> 'AbstractRecommenderSystem':
+    def refit(self, *args, **kwargs) -> 'AbstractRecommenderSystem':
         """
         Method for retrain model
 
@@ -29,7 +39,7 @@ class AbstractRecommenderSystem(ABC):
         """
 
     @abstractmethod
-    def predict_ratings(self, *args) -> np.ndarray:
+    def predict_ratings(self, user_index: int) -> np.ndarray:
         """
         Method for getting a predicted ratings for current user
 
@@ -39,7 +49,7 @@ class AbstractRecommenderSystem(ABC):
         """
 
     @abstractmethod
-    def predict(self, *args) -> np.ndarray:
+    def predict(self, user_index: int, items_count: int) -> np.ndarray:
         """
         Method for getting a predicted indices of items to user
 

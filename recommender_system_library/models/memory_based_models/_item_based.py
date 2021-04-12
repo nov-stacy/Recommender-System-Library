@@ -43,12 +43,16 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
         self._mean_items: np.ndarray = self._data.mean(axis=0).transpose()
         self._mean_users: np.ndarray = self._data.mean(axis=1)
         self._knn.fit(self._data.transpose())
+        self._is_trained = True
         return self
 
     def predict_ratings(self, user_index: int) -> np.ndarray:
-        pass
+        raise NotImplemented
 
     def predict(self, user_index, items_count: int) -> np.ndarray:
+
+        self._is_predict()
+
         # getting the indices of all items that the user has viewed
         items: np.ndarray = np.where(self._data.getrow(user_index).toarray()[0] != 0)[0]
 
@@ -68,8 +72,6 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
                     nearest_items[item] = distance
                 else:
                     nearest_items[item] = min(nearest_items[item], distance)
-
-        x = self._data.toarray()
 
         # get items for recommendation
         sorted_items = sorted(nearest_items.items(), key=lambda x: x[1])[:items_count]

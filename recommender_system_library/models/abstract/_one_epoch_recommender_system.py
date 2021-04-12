@@ -75,7 +75,7 @@ class OneEpochAbstractRecommenderSystem(AbstractRecommenderSystem, ABC):
         -------
         list of indices: numpy array
         """
-
+        self._is_predict()
         return self.predict_ratings(user_index).argsort()[::-1][:items_count]
 
     @abstractmethod

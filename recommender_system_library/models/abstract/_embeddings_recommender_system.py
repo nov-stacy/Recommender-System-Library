@@ -130,7 +130,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         -------
         List of items: numpy array
         """
-
+        self._is_predict()
         return self._user_matrix[user_index] @ self._item_matrix.T
 
     @abstractmethod
@@ -184,11 +184,11 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         Current instance of class: EmbeddingsRecommenderSystem
         """
 
-        self._is_trained = True
         self.debug_information.update(is_debug)
         self._create_user_item_matrix(data)
         self._before_fit(data)
         self._fit(epochs)
+        self._is_trained = True
 
         return self
 
@@ -207,7 +207,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         -------
         List of indices: numpy array
         """
-
+        self._is_predict()
         return self.predict_ratings(user_index).argsort()[::-1][:items_count]
 
     def refit(self, data: sparse.coo_matrix, epochs: int = 100) -> 'EmbeddingsRecommenderSystem':
