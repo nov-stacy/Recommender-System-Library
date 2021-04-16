@@ -1,5 +1,4 @@
 import codecs
-import json
 import pickle
 import typing as tp
 

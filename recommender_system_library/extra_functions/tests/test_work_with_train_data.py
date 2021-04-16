@@ -18,13 +18,13 @@ class TestReadMatrixFromFile(unittest.TestCase):
         if os.path.exists(self.PATH):
             os.remove(self.PATH)
 
-    def test_correct_behavior(self):
+    def test_correct_behavior(self) -> None:
         write_matrix_to_npz(self.MATRIX, self.PATH)
         matrix = read_matrix_from_file(self.PATH)
         self.assertIsInstance(matrix, sparse.coo_matrix)
         self.assertTrue(np.array_equal(matrix.toarray(), self.MATRIX.toarray()))
 
-    def test_raise_type_error(self):
+    def test_raise_type_error(self) -> None:
         self.assertRaises(TypeError, read_matrix_from_file, self.NOT_PATH)
 
 
@@ -55,7 +55,7 @@ class TestConstructCooMatrixFromData(unittest.TestCase):
     NOT_SHAPE_3 = ('4', 3), (4, '3')
     NOT_SHAPE_4 = (-4, 3), (3, -4)
 
-    def test_correct_behavior(self):
+    def test_correct_behavior(self) -> None:
         matrix_1 = construct_matrix_from_data(self.ROWS, self.COLS, self.DATA, self.SHAPE)
         matrix_2 = construct_matrix_from_data(self.ROWS, self.COLS, self.DATA, self.SHAPE_1)
         matrix_3 = construct_matrix_from_data(self.ROWS, self.COLS, self.DATA_1, self.SHAPE)
@@ -65,7 +65,7 @@ class TestConstructCooMatrixFromData(unittest.TestCase):
         self.assertTrue(np.array_equal(matrix_3.toarray(), self.MATRIX_1.toarray()))
         self.assertTrue(np.array_equal(matrix_4.toarray(), self.MATRIX_1.toarray()))
 
-    def test_raise_type_error(self):
+    def test_raise_type_error(self) -> None:
         self.assertRaises(TypeError, construct_matrix_from_data, self.NOT_ROWS_1, self.COLS, self.DATA, self.SHAPE)
         self.assertRaises(TypeError, construct_matrix_from_data, self.ROWS, self.NOT_COLS_1, self.DATA, self.SHAPE)
         self.assertRaises(TypeError, construct_matrix_from_data, self.ROWS, self.COLS, self.NOT_DATA_1, self.SHAPE)
@@ -76,7 +76,7 @@ class TestConstructCooMatrixFromData(unittest.TestCase):
         self.assertRaises(TypeError, construct_matrix_from_data, self.ROWS, self.COLS, self.DATA, self.NOT_SHAPE_3[0])
         self.assertRaises(TypeError, construct_matrix_from_data, self.ROWS, self.COLS, self.DATA, self.NOT_SHAPE_3[1])
 
-    def test_raise_value_error(self):
+    def test_raise_value_error(self) -> None:
         self.assertRaises(ValueError, construct_matrix_from_data, self.NOT_ROWS_2, self.COLS, self.DATA, self.SHAPE)
         self.assertRaises(ValueError, construct_matrix_from_data, self.ROWS, self.NOT_COLS_2, self.DATA, self.SHAPE)
         self.assertRaises(ValueError, construct_matrix_from_data, self.ROWS, self.COLS, self.NOT_DATA_2, self.SHAPE)
@@ -104,17 +104,17 @@ class TestGetTrainData(unittest.TestCase):
     NOT_PROPORTION_2 = -0.5
     NOT_PROPORTION_3 = 1.5
 
-    def test_correct_behavior(self):
+    def test_correct_behavior(self) -> None:
         for proportion in np.arange(0, 1, 0.1):
             matrix = get_train_matrix(self.MATRIX, proportion)
             not_null = np.sum(self.MATRIX.toarray() != 0)
             not_null_1 = np.sum(matrix.toarray() != 0)
             self.assertEqual(int(not_null * proportion), not_null_1)
 
-    def test_raise_type_error(self):
+    def test_raise_type_error(self) -> None:
         self.assertRaises(TypeError, get_train_matrix, self.NOT_MATRIX, self.PROPORTIONS)
         self.assertRaises(TypeError, get_train_matrix, self.MATRIX, self.NOT_PROPORTION_1)
 
-    def test_raise_value_error(self):
+    def test_raise_value_error(self) -> None:
         self.assertRaises(ValueError, get_train_matrix, self.MATRIX, self.NOT_PROPORTION_2)
         self.assertRaises(ValueError, get_train_matrix, self.MATRIX, self.NOT_PROPORTION_3)

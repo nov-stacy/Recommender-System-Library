@@ -14,28 +14,28 @@ __all__ = [
 ]
 
 
-def save_parameters(system_id: int, parameters: tp.Dict[str, tp.Any]) -> None:
+def save_parameters(system_id: int, user_id: int, parameters: tp.Dict[str, tp.Any]) -> None:
 
-    if not check_system(system_id):
+    if not check_model(system_id, user_id):
         raise ValueError
 
     save_parameters_to_file(system_id, parameters)
 
 
-def get_parameters(system_id: int) -> tp.Dict[str, tp.Any]:
+def get_parameters(system_id: int, user_id: int) -> tp.Dict[str, tp.Any]:
 
-    if not check_system(system_id):
+    if not check_model(system_id, user_id):
         raise ValueError
 
     return get_parameters_from_file(system_id)
 
 
-def save_model(system_id: tp.Optional[int], model: AbstractRecommenderSystem, is_clear=False) -> int:
+def save_model(system_id: tp.Optional[int], user_id: int, model: AbstractRecommenderSystem, is_clear=False) -> int:
 
     if system_id is None:
-        system_id = insert_new_system()
+        system_id = insert_new_model(user_id)
 
-    if not check_system(system_id):
+    if not check_model(system_id, user_id):
         raise ValueError
 
     if not check_path_exist(get_path_to_folder_with_models()):
@@ -56,18 +56,18 @@ def save_model(system_id: tp.Optional[int], model: AbstractRecommenderSystem, is
     return system_id
 
 
-def get_model(system_id: int) -> AbstractRecommenderSystem:
+def get_model(system_id: int, user_id: int) -> AbstractRecommenderSystem:
 
-    if not check_system(system_id):
+    if not check_model(system_id, user_id):
         raise ValueError
 
     return get_model_from_file(system_id)
 
 
-def delete_model(system_id: int) -> None:
+def delete_model(system_id: int, user_id: int) -> None:
 
-    if not check_system(system_id):
+    if not check_model(system_id, user_id):
         raise ValueError
 
     delete_model_folder(system_id)
-    delete_system(system_id)
+    delete_model(system_id, user_id)

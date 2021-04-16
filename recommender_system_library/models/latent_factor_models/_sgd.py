@@ -99,7 +99,10 @@ class StochasticLatentFactorModel(EmbeddingsRecommenderSystem):
         self._item_matrix[item_index] += self.__rate * (delta * self._user_matrix[user_index] - item_reg)
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
-        pass
+        # determining known ratings
+        self._users_indices: np.ndarray = data.row
+        self._items_indices: np.ndarray = data.col
+        self._ratings: np.ndarray = data.data
 
     def _train_one_epoch(self) -> None:
         # shuffle all data

@@ -1,40 +1,59 @@
+import typing as tp
+
+import secrets
 import sqlite3
 
 from recommender_system_api.backend.work_with_database._settings import PATH_TO_DATABASE
 from recommender_system_api.backend.work_with_database._file_system import check_path_exist
 
-PATH_TO_DATABASE_TABLE = f'{PATH_TO_DATABASE}/database.db'
+
+PATH_TO_DATABASE_TABLE_WITH_MODELS = f'{PATH_TO_DATABASE}/database.db'
 
 
 def __create_connection() -> sqlite3.Connection:
-    return sqlite3.connect(PATH_TO_DATABASE_TABLE)
+    return sqlite3.connect(PATH_TO_DATABASE_TABLE_WITH_MODELS)
 
 
 def __create_cursor(connection: sqlite3.Connection) -> sqlite3.Cursor:
     return connection.cursor()
 
 
-def __create_table() -> None:
+def __create_database() -> None:
 
-    sql = 'CREATE TABLE systems (id INTEGER PRIMARY KEY AUTOINCREMENT)'
+    sql_1 = 'CREATE TABLE systems (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER)'
+    sql_2 = 'CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL)'
 
     with __create_connection() as connection:
         cursor = __create_cursor(connection)
-        cursor.execute(sql)
+        cursor.execute(sql_1)
+        connection.commit()
+        cursor.execute(sql_2)
         connection.commit()
 
 
 def __check_table() -> None:
 
-    if not check_path_exist(PATH_TO_DATABASE_TABLE):
-        __create_table()
+    if not check_path_exist(PATH_TO_DATABASE_TABLE_WITH_MODELS):
+        __create_database()
 
 
-def insert_new_system() -> int:
+def __check_token(token: str) -> bool:
+
+    sql = f'SELECT id FROM users WHERE token = "{token}"'
+
+    with __create_connection() as connection:
+        cursor = __create_cursor(connection)
+        cursor.execute(sql)
+        rows_count = len(cursor.fetchall())
+
+    return rows_count == 0
+
+
+def insert_new_model(user_id: int) -> int:
 
     __check_table()
 
-    sql = 'INSERT INTO systems DEFAULT VALUES'
+    sql = f'INSERT INTO systems (user_id) VALUES ({user_id})'
 
     with __create_connection() as connection:
         cursor = __create_cursor(connection)
@@ -45,11 +64,29 @@ def insert_new_system() -> int:
     return system_id
 
 
-def check_system(system_id: int) -> bool:
+def insert_new_user() -> str:
 
     __check_table()
 
-    sql = f'SELECT id FROM systems WHERE id = {system_id}'
+    token = secrets.token_urlsafe(16)
+    while not __check_token(token):
+        token = secrets.token_urlsafe(16)
+
+    sql = f'INSERT INTO users (token) VALUES ("{token}")'
+
+    with __create_connection() as connection:
+        cursor = __create_cursor(connection)
+        cursor.execute(sql)
+        connection.commit()
+
+    return token
+
+
+def check_model(system_id: int, user_id: int) -> bool:
+
+    __check_table()
+
+    sql = f'SELECT id FROM systems WHERE id = {system_id} and user_id = {user_id}'
 
     with __create_connection() as connection:
         cursor = __create_cursor(connection)
@@ -59,11 +96,28 @@ def check_system(system_id: int) -> bool:
     return rows_count == 1
 
 
-def delete_system(system_id: int) -> None:
+def check_user(token: str) -> tp.Optional[int]:
 
     __check_table()
 
-    sql = f'DELETE FROM systems WHERE id = {system_id}'
+    sql = f'SELECT id FROM users WHERE token = "{token}"'
+
+    with __create_connection() as connection:
+        cursor = __create_cursor(connection)
+        cursor.execute(sql)
+        result = cursor.fetchall()
+
+    if len(result) != 1:
+        return None
+
+    return result[0][0]
+
+
+def delete_model(system_id: int, user_id: int) -> None:
+
+    __check_table()
+
+    sql = f'DELETE FROM systems WHERE id = {system_id} AND user_id = {user_id}'
 
     with __create_connection() as connection:
         cursor = __create_cursor(connection)

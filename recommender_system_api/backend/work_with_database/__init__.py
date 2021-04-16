@@ -1,2 +1,2 @@
-from ._sql import insert_new_system, check_system, delete_system
+from ._sql import *
 from ._file_system import *

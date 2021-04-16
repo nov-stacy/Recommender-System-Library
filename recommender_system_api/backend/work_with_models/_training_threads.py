@@ -38,10 +38,11 @@ def _async_raise(tid, exc_type):
 
 class TrainThread(threading.Thread):
 
-    def __init__(self, system_id: int, model: AbstractRecommenderSystem, data: sparse.coo_matrix,
+    def __init__(self, system_id: int, user_id: int, model: AbstractRecommenderSystem, data: sparse.coo_matrix,
                  train_parameters: tp.Dict[str, tp.Any]) -> None:
         super().__init__()
         self.__system_id = system_id
+        self.__user_id = user_id
         self.__model = model
         self.__data = data
         self.__train_parameters = train_parameters
@@ -70,7 +71,7 @@ class TrainThread(threading.Thread):
                 self.__model.refit(self.__data, **self.__train_parameters)
             else:
                 self.__model.fit(self.__data, **self.__train_parameters)
-            save_model(self.__system_id, self.__model, is_clear=True)
+            save_model(self.__system_id, self.__user_id, self.__model, is_clear=True)
         except Exception:
             self.is_error = True
         finally:
@@ -84,6 +85,9 @@ class TrainThread(threading.Thread):
 
 
 __training_threads: tp.Dict[int, TrainThread] = dict()
+
+
+# TODO CHECK MODEL FOR USER ID
 
 
 def add_thread(system_id: int, thread: TrainThread) -> bool:

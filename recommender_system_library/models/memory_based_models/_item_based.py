@@ -5,10 +5,10 @@ from scipy import sparse as sparse
 from scipy.stats import pearsonr
 from sklearn.neighbors import NearestNeighbors
 
-from recommender_system_library.models.abstract import OneEpochAbstractRecommenderSystem
+from recommender_system_library.models.abstract import AbstractRecommenderSystemTrainWithOneEpoch
 
 
-class ItemBasedModel(OneEpochAbstractRecommenderSystem):
+class ItemBasedModel(AbstractRecommenderSystemTrainWithOneEpoch):
     """
     Recommender system based on similarities between items
 
@@ -30,7 +30,14 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
             The number of closest neighbors that must be taken into account
             when predicting an estimate for an item
         """
-        self._data: sparse.coo_matrix = np.array([])  # matrix for storing all data
+
+        if type(k_nearest_neighbours) != int:
+            raise TypeError('k_nearest_neighbours should have integer type')
+
+        if k_nearest_neighbours <= 0:
+            raise ValueError('k_nearest_neighbours should be positive')
+
+        self._data: sparse.coo_matrix = sparse.coo_matrix([])  # matrix for storing all data
         self._mean_items: np.ndarray = np.array([])  # matrix for the average ratings of each user
         self._mean_users: np.ndarray = np.array([])  # matrix for the average ratings of each item
 
@@ -38,21 +45,16 @@ class ItemBasedModel(OneEpochAbstractRecommenderSystem):
         self._k_nearest_neighbours = k_nearest_neighbours
         self._knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neighbours + 1, metric=self._correlation)
 
-    def fit(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
+    def _fit(self, data: sparse.coo_matrix) -> None:
         self._data: sparse.coo_matrix = data
         self._mean_items: np.ndarray = self._data.mean(axis=0).transpose()
         self._mean_users: np.ndarray = self._data.mean(axis=1)
         self._knn.fit(self._data.transpose())
-        self._is_trained = True
-        return self
 
-    def predict_ratings(self, user_index: int) -> np.ndarray:
-        raise NotImplemented
+    def _predict_ratings(self, user_index: int) -> np.ndarray:
+        raise AttributeError
 
-    def predict(self, user_index, items_count: int) -> np.ndarray:
-
-        self._is_predict()
-
+    def _predict(self, user_index, items_count: int) -> np.ndarray:
         # getting the indices of all items that the user has viewed
         items: np.ndarray = np.where(self._data.getrow(user_index).toarray()[0] != 0)[0]
 

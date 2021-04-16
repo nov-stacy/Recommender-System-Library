@@ -3,20 +3,29 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+__all__ = ['AbstractRecommenderSystem']
+
+
 class AbstractRecommenderSystem(ABC):
     """
     Abstract class for system of recommendations
     """
 
-    _is_trained = False
+    _is_trained = False  # indicator for determining whether the model has been trained
 
     @property
     def is_trained(self):
+        """
+        Indicator for determining whether the model has been trained
+        """
         return self._is_trained
 
-    def _is_predict(self):
+    def _check_trained_and_rise_error(self):
+        """
+        Indicator for determining whether the model has been trained
+        """
         if not self._is_trained:
-            raise RuntimeError('Model should be trained')
+            raise AttributeError('Model should be trained')
 
     @abstractmethod
     def fit(self, *args, **kwargs) -> 'AbstractRecommenderSystem':

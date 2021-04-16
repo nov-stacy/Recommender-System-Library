@@ -1,5 +1,6 @@
-import numpy as np
 import typing as tp
+
+import numpy as np
 
 
 __all__ = ['calculate_predicted_items']

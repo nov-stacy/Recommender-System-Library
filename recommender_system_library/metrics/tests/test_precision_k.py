@@ -23,13 +23,13 @@ class TestPrecisionK(unittest.TestCase):
     NOT_PREDICTED_INDICES_4 = [np.array([0.5]), np.array([0.5]), np.array([0.5]), np.array([0.5]), np.array([0.5])]
     NOT_PREDICTED_INDICES_5 = [np.array([-1]), np.array([-1]), np.array([-1]), np.array([-1]), np.array([-1])]
 
-    def test_correct_behavior(self):
+    def test_correct_behavior(self) -> None:
         for true, predicted, result in zip(self.TRUE_INDICES, self.PREDICTED_INDICES, self.PRECISION):
             self.assertAlmostEqual(precision_k([true], [predicted]), result)
         self.assertAlmostEqual(precision_k(self.TRUE_INDICES, self.PREDICTED_INDICES), np.mean(self.PRECISION))
         self.assertAlmostEqual(precision_k(self.TRUE_INDICES_ZERO, self.PREDICTED_INDICES_ZERO), 0)
 
-    def test_raise_type_error(self):
+    def test_raise_type_error(self) -> None:
         self.assertRaises(TypeError, precision_k, self.NOT_TRUE_INDICES_1, self.PREDICTED_INDICES)
         self.assertRaises(TypeError, precision_k, self.TRUE_INDICES, self.NOT_PREDICTED_INDICES_1)
         self.assertRaises(TypeError, precision_k, self.NOT_TRUE_INDICES_3, self.PREDICTED_INDICES)
@@ -37,7 +37,7 @@ class TestPrecisionK(unittest.TestCase):
         self.assertRaises(TypeError, precision_k, self.NOT_TRUE_INDICES_4, self.PREDICTED_INDICES)
         self.assertRaises(TypeError, precision_k, self.TRUE_INDICES, self.NOT_PREDICTED_INDICES_4)
 
-    def test_raise_value_error(self):
+    def test_raise_value_error(self) -> None:
         self.assertRaises(ValueError, precision_k, self.NOT_TRUE_INDICES_2, self.PREDICTED_INDICES)
         self.assertRaises(ValueError, precision_k, self.TRUE_INDICES, self.NOT_PREDICTED_INDICES_2)
         self.assertRaises(ValueError, precision_k, self.NOT_TRUE_INDICES_5, self.PREDICTED_INDICES)

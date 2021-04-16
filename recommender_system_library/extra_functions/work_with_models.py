@@ -1,5 +1,6 @@
-import pickle
 import typing as tp
+
+import pickle
 
 from utilspie.collectionsutils import frozendict
 
@@ -29,7 +30,7 @@ MODELS_CLASSES = tuple([
 ])
 
 
-__models_dict: tp.Dict[str, AbstractRecommenderSystem.__class__] = frozendict(zip(MODELS_NAMES, MODELS_CLASSES))
+MODELS_DICT: tp.Dict[str, AbstractRecommenderSystem.__class__] = frozendict(zip(MODELS_NAMES, MODELS_CLASSES))
 
 
 def create_model(type_model: str, parameters: tp.Dict[str, tp.Any]) -> AbstractRecommenderSystem:
@@ -59,7 +60,7 @@ def create_model(type_model: str, parameters: tp.Dict[str, tp.Any]) -> AbstractR
     if type_model not in MODELS_NAMES:
         raise ValueError('There is no such model')
 
-    return __models_dict[type_model](**parameters)
+    return MODELS_DICT[type_model](**parameters)
 
 
 def save_model_to_file(model: AbstractRecommenderSystem, path_to_file: str) -> None:

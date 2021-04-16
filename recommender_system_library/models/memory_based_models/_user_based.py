@@ -3,10 +3,10 @@ from scipy import sparse as sparse
 from scipy.stats import pearsonr
 from sklearn.neighbors import NearestNeighbors
 
-from recommender_system_library.models.abstract import OneEpochAbstractRecommenderSystem
+from recommender_system_library.models.abstract import AbstractRecommenderSystemTrainWithOneEpoch
 
 
-class UserBasedModel(OneEpochAbstractRecommenderSystem):
+class UserBasedModel(AbstractRecommenderSystemTrainWithOneEpoch):
     """
     Recommender system based on distance between users and what neighbors like
 
@@ -24,25 +24,29 @@ class UserBasedModel(OneEpochAbstractRecommenderSystem):
             The number of closest neighbors that must be taken into account
             when predicting an estimate for an item
         """
-        self._data: sparse.coo_matrix = np.array([])  # matrix for storing all data
-        self._mean_items: np.ndarray = np.array([])  # matrix for the average ratings of each user
-        self._mean_users: np.ndarray = np.array([])  # matrix for the average ratings of each item
+
+        if type(k_nearest_neighbours) != int:
+            raise TypeError('k_nearest_neighbours should have integer type')
+
+        if k_nearest_neighbours <= 0:
+            raise ValueError('k_nearest_neighbours should be positive')
+
+        self._data: sparse.coo_matrix = sparse.coo_matrix([])  # matrix for storing all data
+        self._mean_users: np.ndarray = np.array([])  # matrix for the average ratings of each user
+        self._mean_items: np.ndarray = np.array([])  # matrix for the average ratings of each item
 
         # algorithm for determining the nearest neighbors
         self._k_nearest_neighbours = k_nearest_neighbours
         self._knn: NearestNeighbors = NearestNeighbors(n_neighbors=k_nearest_neighbours + 1)
 
-    def fit(self, data: sparse.coo_matrix) -> 'OneEpochAbstractRecommenderSystem':
+    def _fit(self, data: sparse.coo_matrix) -> None:
+
         self._data: sparse.coo_matrix = data
-        self._mean_items: np.ndarray = self._data.mean(axis=0).transpose()
         self._mean_users: np.ndarray = self._data.mean(axis=1)
+        self._mean_items: np.ndarray = self._data.mean(axis=0).transpose()
         self._knn.fit(self._data)
-        self._is_trained = True
-        return self
 
-    def predict_ratings(self, user_index: int) -> np.ndarray:
-
-        self._is_predict()
+    def _predict_ratings(self, user_index: int) -> np.ndarray:
 
         # get a list of k nearest neighbours of current user
         nearest_users: np.ndarray = self._knn.kneighbors(self._data.getrow(user_index), return_distance=False)[0]

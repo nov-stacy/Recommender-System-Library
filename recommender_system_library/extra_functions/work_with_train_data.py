@@ -1,9 +1,7 @@
-import json
-import pickle
+import typing as tp
 
 import scipy.sparse as sparse
 import numpy as np
-import typing as tp
 
 
 __all__ = [

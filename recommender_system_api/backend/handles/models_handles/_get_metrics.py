@@ -22,7 +22,7 @@ __predict_parameter_names = (
 )
 
 
-def get_metric_for_recommender_system(metric_name: str, system_id: int, data: tp.Dict[str, tp.Any]) -> tp.Dict[str, tp.Any]:
+def get_metric_for_recommender_system(user_id: int, metric_name: str, system_id: int, data: tp.Dict[str, tp.Any]) -> tp.Dict[str, tp.Any]:
 
     keys = [KEY_TEST_DATA, KEY_USERS, KEY_PREDICT_PARAMETER_NAME, KEY_PREDICT_PARAMETER_VALUE]
     matrix_data, users_list, predict_param_name, predict_param_value = split_data(data, keys)
@@ -33,7 +33,7 @@ def get_metric_for_recommender_system(metric_name: str, system_id: int, data: tp
     if predict_param_name not in __predict_parameter_names:
         raise ValueError
 
-    model = get_model(system_id)
+    model = get_model(system_id, user_id)
 
     if predict_param_name == __predict_parameter_names[0]:
 

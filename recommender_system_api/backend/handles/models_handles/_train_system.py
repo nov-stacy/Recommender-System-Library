@@ -8,14 +8,14 @@ from recommender_system_api.backend.work_with_models import *
 __all__ = ['train_recommender_system']
 
 
-def train_recommender_system(system_id: int, data: tp.Dict[str, tp.Any]) -> None:
+def train_recommender_system(user_id: int, system_id: int, data: tp.Dict[str, tp.Any]) -> None:
 
     parameters, train_matrix_str = split_data(data, [KEY_PARAMS, KEY_TRAIN_DATA])
-    model = get_model(system_id)
+    model = get_model(system_id, user_id)
 
     train_matrix = get_data(train_matrix_str)
 
-    thread = TrainThread(system_id, model, train_matrix, parameters)
+    thread = TrainThread(system_id, user_id, model, train_matrix, parameters)
     thread.setDaemon(True)
     thread.start()
 

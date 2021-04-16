@@ -19,7 +19,7 @@ class TestCalculateIssueRankedList(unittest.TestCase):
     BARRIER_VALUE = 0.5
     NOT_BARRIER_VALUE = '0.5'
 
-    def test_correct_behavior(self):
+    def test_correct_behavior(self) -> None:
 
         for _ in range(self.TEST_SIZE):
 
@@ -37,13 +37,13 @@ class TestCalculateIssueRankedList(unittest.TestCase):
                 self.assertIsInstance(predict, np.ndarray)
                 self.assertTrue(np.array_equal(indices[sorted_data >= barrier_value], predict))
 
-    def test_raise_type_error(self):
+    def test_raise_type_error(self) -> None:
         self.assertRaises(TypeError, calculate_predicted_items, self.NOT_RATINGS_1, k_items=self.K_ITEMS)
         self.assertRaises(TypeError, calculate_predicted_items, self.NOT_RATINGS_2, k_items=self.K_ITEMS)
         self.assertRaises(TypeError, calculate_predicted_items, self.RATINGS, k_items=self.NOT_K_ITEMS_2)
         self.assertRaises(TypeError, calculate_predicted_items, self.RATINGS, barrier_value=self.NOT_BARRIER_VALUE)
 
-    def test_raise_value_error(self):
+    def test_raise_value_error(self) -> None:
         self.assertRaises(ValueError, calculate_predicted_items, self.RATINGS)
         self.assertRaises(ValueError, calculate_predicted_items, self.RATINGS, k_items=self.NOT_K_ITEMS_1[0])
         self.assertRaises(ValueError, calculate_predicted_items, self.RATINGS, k_items=self.NOT_K_ITEMS_1[1])
