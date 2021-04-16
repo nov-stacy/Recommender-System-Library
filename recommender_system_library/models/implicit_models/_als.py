@@ -7,7 +7,7 @@ from recommender_system_library.models.abstract import EmbeddingsRecommenderSyst
 
 class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
 
-    def __init__(self, dimension: int) -> None:
+    def __init__(self, dimension: int, influence_regularization: float = 0) -> None:
         """
         Parameters
         ----------
@@ -16,6 +16,8 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         """
 
         super().__init__(dimension)
+
+        self._influence: float = influence_regularization
 
     def _calculate_users_matrix(self, users_count):
         """
@@ -51,11 +53,13 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
             self._items_matrix[index, :] = sla.cho_solve(cho_decomposition, vector).flatten()
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
+        matrix_ones = sparse.coo_matrix(np.ones(self._implicit_data.shape))
+
         self._data = data
 
-        # determining the average values of implicit interest for users and items
-        self._implicit_users: np.ndarray = (data != 0).astype(int).mean(axis=1)
-        self._implicit_items: np.ndarray = (data != 0).mean(axis=0).transpose()
+        # determining the matrices of implicit data
+        self._implicit_data: sparse.coo_matrix = (data != 0).astype(int)
+        self._implicit_data_with_reg: sparse.coo_matrix = self._influence * matrix_ones + self._implicit_data
 
     def _train_one_epoch(self) -> None:
         # calculate matrices for users and items analytically

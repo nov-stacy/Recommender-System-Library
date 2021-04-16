@@ -81,7 +81,7 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         matrix_ones = sparse.coo_matrix(np.ones(self._implicit_data.shape))
 
-        # determining the average values of implicit interest for users and items
+        # determining the matrices of implicit data
         self._implicit_data: sparse.coo_matrix = (data != 0).astype(int)
         self._implicit_data_with_reg: sparse.coo_matrix = self._influence * matrix_ones + self._implicit_data
 
