@@ -24,7 +24,7 @@ class AlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
 
         super().__init__(dimension)
 
-    def _calculate_user_matrix(self, users_count: int) -> None:
+    def _calculate_users_matrix(self, users_count: int) -> None:
         """
         Method for finding a matrix for users analytically
 
@@ -37,11 +37,10 @@ class AlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         cho_decomposition = sla.cho_factor(quotient_matrix)
 
         for index in range(users_count):
-            self._users_matrix[index, :] = \
-                sla.cho_solve(cho_decomposition,
-                              self._items_matrix.T.dot(self._data.getrow(index).todense().T)).flatten()
+            vector = self._items_matrix.T.dot(self._data.getrow(index).todense().T)
+            self._users_matrix[index, :] = sla.cho_solve(cho_decomposition, vector).flatten()
 
-    def _calculate_item_matrix(self, items_count: int) -> None:
+    def _calculate_items_matrix(self, items_count: int) -> None:
         """
         Method for finding a matrix for items analytically
 
@@ -55,17 +54,16 @@ class AlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         cho_decomposition = sla.cho_factor(quotient_matrix)
 
         for index in range(items_count):
-            self._items_matrix[index, :] = \
-                sla.cho_solve(cho_decomposition,
-                              self._users_matrix.T.dot(self._data.getcol(index).todense())).flatten()
+            vector = self._users_matrix.T.dot(self._data.getcol(index).todense())
+            self._items_matrix[index, :] = sla.cho_solve(cho_decomposition, vector).flatten()
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data
 
     def _train_one_epoch(self) -> None:
         # calculate matrices for users and items analytically
-        self._calculate_user_matrix(self._users_count)
-        self._calculate_item_matrix(self._items_count)
+        self._calculate_users_matrix(self._users_count)
+        self._calculate_items_matrix(self._items_count)
 
     def __str__(self) -> str:
         return f'ALS [dimension = {self._dimension}]'

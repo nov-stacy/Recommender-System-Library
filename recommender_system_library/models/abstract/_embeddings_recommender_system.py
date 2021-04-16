@@ -20,6 +20,10 @@ class EmbeddingDebug:
     def __init__(self) -> None:
         self._debug_information: tp.Optional[tp.List[float]] = None  # array with errors on each epoch
 
+        # matrices with latent features
+        self._users_matrix: np.ndarray = np.array([])
+        self._items_matrix: np.ndarray = np.array([])
+
     def update(self, is_debug: bool) -> None:
         """
         Checking whether the debugger will be enabled
@@ -36,7 +40,7 @@ class EmbeddingDebug:
         self._debug_information = [] if is_debug else None
 
     def set(self, users_indices: np.ndarray, items_indices: np.ndarray, ratings: np.ndarray,
-            user_matrix: np.ndarray, item_matrix: np.ndarray,
+            users_matrix: np.ndarray, items_matrix: np.ndarray,
             mean_users: np.ndarray, mean_items: np.ndarray) -> None:
         """
         Calculate functional of error
@@ -49,9 +53,9 @@ class EmbeddingDebug:
             Array for indices with not null ratings
         ratings: numpy array
             Array with not null ratings
-        user_matrix: numpy array
+        users_matrix: numpy array
             Matrix of users with latent features
-        item_matrix: numpy array
+        items_matrix: numpy array
             Matrix of items with latent features
         mean_users: numpy array
             Average values for users ratings
@@ -59,12 +63,12 @@ class EmbeddingDebug:
             Average values for items ratings
         """
 
-        if not(type(users_indices) == type(items_indices) == type(ratings) == type(user_matrix) ==
-               type(item_matrix) == type(mean_users) == type(mean_items) == np.ndarray):
+        if not(type(users_indices) == type(items_indices) == type(ratings) == type(users_matrix) ==
+               type(items_matrix) == type(mean_users) == type(mean_items) == np.ndarray):
             raise TypeError('All data should be numpy array type')
 
         data_shapes = [users_indices.shape, items_indices.shape, ratings.shape]
-        matrix_shapes = [user_matrix.shape, item_matrix.shape]
+        matrix_shapes = [users_matrix.shape, items_matrix.shape]
         mean_shapes = [mean_users.shape, mean_items.shape]
 
         if not(len(data_shapes[0]) == len(data_shapes[1]) == len(data_shapes[2]) == 1):
@@ -77,7 +81,7 @@ class EmbeddingDebug:
             raise ValueError('Matrices should be 2D')
 
         if not(matrix_shapes[0][1] == matrix_shapes[1][1]):
-            raise ValueError('user_matrix and item_matrix should have same dimension')
+            raise ValueError('users_matrix and items_matrix should have same dimension')
 
         if not(len(mean_shapes[0]) == len(mean_shapes[1]) == 2) or not(mean_shapes[0][1] == mean_shapes[1][1] == 1):
             raise ValueError('Means should be 2D: (1, N)')
@@ -90,7 +94,7 @@ class EmbeddingDebug:
         # for each user and item for which the ratings are known
         for user_index, item_index, rating in zip(users_indices, items_indices, ratings):
             # similarity between user and item
-            similarity = user_matrix[user_index] @ item_matrix[item_index].T
+            similarity = users_matrix[user_index] @ items_matrix[item_index].T
             # adding to the functionality
             result += (rating - mean_users[user_index] - mean_items[item_index] - similarity) ** 2
 
@@ -136,12 +140,12 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
 
         self._dimension: int = dimension
 
-        self._user_matrix: np.ndarray = np.array([])  # matrix of users with latent features
-        self._item_matrix: np.ndarray = np.array([])  # matrix of items with latent features
+        self._users_matrix: np.ndarray = np.array([])  # matrix of users with latent features
+        self._items_matrix: np.ndarray = np.array([])  # matrix of items with latent features
 
         self.debug_information = EmbeddingDebug()
 
-    def _create_user_item_matrix(self, data: sparse.coo_matrix) -> None:
+    def _create_user_items_matrix(self, data: sparse.coo_matrix) -> None:
         """
         Method for determining the matrix of hidden features for the users and items
 
@@ -157,8 +161,8 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         self._items_count: int = data.shape[1]
 
         # generate matrices with latent features
-        self._user_matrix: np.ndarray = np.random.randn(self._users_count, self._dimension)
-        self._item_matrix: np.ndarray = np.random.randn(self._items_count, self._dimension)
+        self._users_matrix: np.ndarray = np.random.randn(self._users_count, self._dimension)
+        self._items_matrix: np.ndarray = np.random.randn(self._items_count, self._dimension)
 
         # determining average values for users and items
         self._mean_users: np.ndarray = np.array(data.mean(axis=1))
@@ -221,7 +225,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             self._train_one_epoch()
             if is_debug:
                 self.debug_information.set(self._users_indices, self._items_indices, self._ratings,
-                                           self._user_matrix, self._item_matrix, self._mean_users, self._mean_items)
+                                           self._users_matrix, self._items_matrix, self._mean_users, self._mean_items)
 
     def fit(self, data: sparse.coo_matrix, epochs: int, is_debug: bool = False) -> 'EmbeddingsRecommenderSystem':
         """
@@ -255,7 +259,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             raise TypeError('Indicator of debug should have bool type')
 
         self.debug_information.update(is_debug)
-        self._create_user_item_matrix(data)
+        self._create_user_items_matrix(data)
         self._create_information_for_debugging(data, is_debug)
         self._before_fit(data)
         self._fit(epochs, is_debug)
@@ -300,12 +304,12 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         # add new users to matrix
         if data.shape[0] > self._users_count:
             matrix_part = np.random.randn(data.shape[0] - self._users_count, self._dimension)
-            self._user_matrix = np.vstack((self._user_matrix, matrix_part))
+            self._users_matrix = np.vstack((self._users_matrix, matrix_part))
 
         # add new items to matrix
         if data.shape[1] > self._items_count:
             matrix_part = np.random.randn(data.shape[1] - self._items_count, self._dimension)
-            self._item_matrix = np.vstack((self._item_matrix, matrix_part))
+            self._items_matrix = np.vstack((self._items_matrix, matrix_part))
 
         self.debug_information.update(is_debug)
         self._create_information_for_debugging(data, is_debug)
@@ -333,10 +337,10 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         if type(user_index) != int:
             raise TypeError('Index should have integer type')
 
-        if not (0 <= user_index < self._users_count):
-            raise ValueError('Index should be positive and less than count of users')
+        if user_index < 0:
+            raise ValueError('Index should be not negative')
 
-        return self._user_matrix[user_index] @ self._item_matrix.T
+        return self._users_matrix[user_index] @ self._items_matrix.T
 
     def predict(self, user_index: int, items_count: int) -> np.ndarray:
         """
@@ -359,14 +363,14 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         if type(user_index) != int:
             raise TypeError('Index should have integer type')
 
-        if not (0 <= user_index < self._users_count):
-            raise ValueError('Index should be positive and less than count of users')
+        if user_index < 0:
+            raise ValueError('Index should be not negative')
 
         if type(items_count) != int:
             raise TypeError('Count of items should have integer type')
 
-        if not (0 < items_count <= self._items_count):
-            raise ValueError('Count of items should be positive and less than count of all items')
+        if items_count <= 0:
+            raise ValueError('Count of items should be positive')
 
         return self.predict_ratings(user_index).argsort()[::-1][:items_count]
 

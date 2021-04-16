@@ -33,10 +33,10 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
 
         super().__init__(dimension)
 
-        self.__rate: float = learning_rate
-        self.__influence: float = influence_regularization
-        self.__user_regularization: float = user_regularization
-        self.__item_regularization: float = item_regularization
+        self._rate: float = learning_rate
+        self._influence: float = influence_regularization
+        self._user_regularization: float = user_regularization
+        self._item_regularization: float = item_regularization
 
     def __calculate_delta(self, user_index: int, item_index: int, rating: float, indicator: int) -> float:
         """
@@ -60,13 +60,14 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
         """
 
         # similarity between user and item
-        similarity = self._user_matrix[user_index] @ self._item_matrix[item_index].T
+        similarity = self._users_matrix[user_index] @ self._items_matrix[item_index].T
 
         # get the difference between the true value of the rating and the approximate
-        return (indicator - np.asscalar(self._mean_users[user_index]) -
-                np.asscalar(self._mean_items[item_index]) - similarity) * (1 + self.__influence * rating)
+        implicit_user = np.asscalar(self._implicit_users[user_index])
+        implicit_item = np.asscalar(self._implicit_items[item_index])
+        return (indicator - implicit_user - implicit_item - similarity) * (1 + self._influence * rating)
 
-    def __calculate_user_matrix(self, user_index: int, item_index: int, delta: float) -> None:
+    def __calculate_users_matrix(self, user_index: int, item_index: int, delta: float) -> None:
         """
         Method for finding a row of users matrix
 
@@ -80,11 +81,11 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
             Difference between original and calculated rating
         """
         # the value of regularization for the user
-        user_reg = self.__user_regularization * np.sum(self._user_matrix[user_index]) / self._dimension
+        user_reg = self._user_regularization * np.sum(self._users_matrix[user_index]) / self._dimension
         # changing hidden variables for the user
-        self._user_matrix[user_index] += self.__rate * (delta * self._item_matrix[item_index] - user_reg)
+        self._users_matrix[user_index] += self._rate * (delta * self._items_matrix[item_index] - user_reg)
 
-    def __calculate_item_matrix(self, user_index: int, item_index: int, delta: float) -> None:
+    def __calculate_items_matrix(self, user_index: int, item_index: int, delta: float) -> None:
         """
         Method for finding a row of users matrix
 
@@ -98,16 +99,16 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
             Difference between original and calculated rating
         """
         # the value of regularization for the item
-        item_reg = self.__item_regularization * np.sum(self._item_matrix[item_index]) / self._dimension
+        item_reg = self._item_regularization * np.sum(self._items_matrix[item_index]) / self._dimension
         # changing hidden variables for the item
-        self._item_matrix[item_index] += self.__rate * (delta * self._user_matrix[user_index] - item_reg)
+        self._items_matrix[item_index] += self._rate * (delta * self._users_matrix[user_index] - item_reg)
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data: sparse.coo_matrix = data
 
         # determining the average values of implicit interest for users and items
-        self._mean_users: np.ndarray = (data != 0).astype(int).mean(axis=1)
-        self._mean_items: np.ndarray = (data != 0).mean(axis=0).transpose()
+        self._implicit_users: np.ndarray = (data != 0).astype(int).mean(axis=1)
+        self._implicit_items: np.ndarray = (data != 0).mean(axis=0).transpose()
 
     def _train_one_epoch(self) -> None:
         # random users
@@ -126,9 +127,9 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
             ii_user: np.ndarray = (user_ratings != 0).astype(int)
 
             for item_index in items_indices:
-                delta = self.__calculate_delta(user_index, item_index, user_ratings[item_index], ii_user[item_index])
-                self.__calculate_user_matrix(user_index, item_index, delta)
-                self.__calculate_item_matrix(user_index, item_index, delta)
+                delta = self._calculate_delta(user_index, item_index, user_ratings[item_index], ii_user[item_index])
+                self._calculate_users_matrix(user_index, item_index, delta)
+                self._calculate_items_matrix(user_index, item_index, delta)
 
     def __str__(self) -> str:
         return f'iSGD [dimension = {self._dimension}]'

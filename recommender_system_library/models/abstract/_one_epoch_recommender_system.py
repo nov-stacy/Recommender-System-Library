@@ -107,8 +107,8 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
         if type(user_index) != int:
             raise TypeError('Index should have integer type')
 
-        if not (0 <= user_index):
-            raise ValueError('Index should be positive')
+        if user_index < 0:
+            raise ValueError('Index should be not negative')
 
         return self._predict_ratings(user_index)
 

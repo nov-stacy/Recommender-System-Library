@@ -40,12 +40,12 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         """
 
         indices = list(range(index)) + list(range(index + 1, self._dimension))
-        calculated_data = sum((self._user_matrix[:, _index].reshape((self._user_matrix[:, _index].shape[0], 1)) @
-                               self._item_matrix[:, _index].reshape((self._item_matrix[:, _index].shape[0], 1)).T
+        calculated_data = sum((self._users_matrix[:, _index].reshape((self._users_matrix[:, _index].shape[0], 1)) @
+                               self._items_matrix[:, _index].reshape((self._items_matrix[:, _index].shape[0], 1)).T
                                for _index in indices))
         return self._data - calculated_data
 
-    def _calculate_user_matrix(self, index: int, delta: np.array) -> None:
+    def _calculate_users_matrix(self, index: int, delta: np.array) -> None:
         """
         Method for finding a column of users matrix
 
@@ -57,10 +57,10 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
             The difference between the original rating matrix and the matrix that was obtained at this point in time
         """
 
-        denominator = self._item_matrix[:, index].T @ self._item_matrix[:, index]
-        self._user_matrix[:, index] = delta @ self._item_matrix[:, index] / denominator
+        denominator = self._items_matrix[:, index].T @ self._items_matrix[:, index]
+        self._users_matrix[:, index] = delta @ self._items_matrix[:, index] / denominator
 
-    def _calculate_item_matrix(self, index: int, delta: np.array) -> None:
+    def _calculate_items_matrix(self, index: int, delta: np.array) -> None:
         """
         Method for finding a column of items matrix
 
@@ -72,20 +72,19 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
             The difference between the original rating matrix and the matrix that was obtained at this point in time
         """
 
-        denominator = self._user_matrix[:, index].T @ self._user_matrix[:, index]
-        self._user_matrix[:, index] = self._user_matrix[:, index].T @ delta / denominator
+        denominator = self._users_matrix[:, index].T @ self._users_matrix[:, index]
+        self._users_matrix[:, index] = self._users_matrix[:, index].T @ delta / denominator
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data
 
     def _train_one_epoch(self) -> None:
         for index in range(self._dimension):
-            # the difference between the original rating matrix and user_matrix @ item_matrix
+            # the difference between the original rating matrix and users_matrix @ items_matrix
             delta = self._calculate_delta(index)
-
             # calculate  a columns of matrices for users and items
-            self._calculate_user_matrix(index, delta)
-            self._calculate_item_matrix(index, delta)
+            self._calculate_users_matrix(index, delta)
+            self._calculate_items_matrix(index, delta)
 
     def __str__(self) -> str:
         return f'HALS [dimension = {self._dimension}]'
