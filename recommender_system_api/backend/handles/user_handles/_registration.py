@@ -8,5 +8,12 @@ __all__ = ['registration_user']
 
 
 def registration_user() -> tp.Dict[str, tp.Any]:
+    """
+    Method for registering a new user in the system
+
+    Returns
+    -------
+    token: dictionary
+    """
 
     return {KEY_TOKEN: insert_new_user()}

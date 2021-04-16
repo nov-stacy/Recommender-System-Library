@@ -11,6 +11,22 @@ from recommender_system_library.extra_functions.work_with_models import get_mode
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
+__all__ = [
+    'check_path_exist',
+    'get_path_to_folder_with_models',
+    'get_path_to_folder_with_model',
+    'get_path_to_first_model',
+    'get_path_to_second_model',
+    'create_folder',
+    'delete_model_folder',
+    'delete_second_model',
+    'save_model_to_file',
+    'get_model_from_file',
+    'save_parameters_to_file',
+    'get_parameters_from_file'
+]
+
+
 def check_path_exist(path) -> bool:
     return os.path.exists(path)
 
@@ -65,19 +81,3 @@ def save_parameters_to_file(system_id: int, parameters: tp.Dict[str, tp.Any]) ->
 def get_parameters_from_file(system_id: int) -> tp.Dict[str, tp.Any]:
     with open(f'{get_path_to_folder_with_model(system_id)}/{PARAMETERS_FILE}', 'rb') as file:
         return pickle.load(file)
-
-
-__all__ = [
-    'check_path_exist',
-    'get_path_to_folder_with_models',
-    'get_path_to_folder_with_model',
-    'get_path_to_first_model',
-    'get_path_to_second_model',
-    'create_folder',
-    'delete_model_folder',
-    'delete_second_model',
-    'save_model_to_file',
-    'get_model_from_file',
-    'save_parameters_to_file',
-    'get_parameters_from_file'
-]

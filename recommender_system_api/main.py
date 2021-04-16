@@ -8,19 +8,25 @@ app = flask.Flask(__name__)
 
 
 def method_for_exception_catch(good_status_code):
+    """
+    Method for creating a decorator
+    """
 
     def decorator(function):
+        """
+        Decorator for determining the behavior of the program when an error occurs
+        """
 
         def wrapper(*args, **kwargs):
             try:
-                result = function(*args, **kwargs)
-                if result is None:
+                result = function(*args, **kwargs)  # request processing
+                if result is None:  # if the function returns no response, the method returns only the code
                     return flask.Response(status=good_status_code)
                 return flask.make_response(flask.jsonify(result), good_status_code)
-            except (TypeError, ValueError):
-                return flask.Response(status=400)
-            except AttributeError:
-                return flask.Response(status=405)
+            except (TypeError, ValueError) as error:  # invalid data
+                return flask.Response(flask.jsonify({'message': str(error)}), status=400)
+            except AttributeError as error:  # error accessing class methods or invalid user data
+                return flask.Response(flask.jsonify({'message': str(error)}), status=405)
 
         wrapper.__name__ = function.__name__
         return wrapper
@@ -36,7 +42,6 @@ def main() -> flask.Response:
 @app.route('/registration', methods=['POST'])
 @method_for_exception_catch(201)
 def registration_user() -> tp.Dict[str, tp.Any]:
-    print('HELLO')
     return backend.registration_user()
 
 
@@ -65,7 +70,7 @@ def train_recommender_system(system_id: int) -> None:
 @method_for_exception_catch(200)
 def check_status(system_id: int) -> tp.Dict[str, tp.Any]:
     user_id = backend.check_user_token(flask.request.headers)
-    return backend.check_status(user_id, system_id)
+    return backend.check_status_of_recommender_system(user_id, system_id)
 
 
 @app.route('/clear/<system_id>', methods=['POST'])
@@ -82,8 +87,8 @@ def delete_recommender_system(system_id: int) -> None:
     backend.delete_recommender_system(user_id, system_id)
 
 
-@method_for_exception_catch(200)
 @app.route('/predict_ratings/<system_id>', methods=['GET'])
+@method_for_exception_catch(200)
 def get_predicted_ratings(system_id: int) -> tp.Dict[str, tp.Any]:
     user_id = backend.check_user_token(flask.request.headers)
     return backend.get_list_of_ratings_from_recommender_system(user_id, system_id, flask.request.json)

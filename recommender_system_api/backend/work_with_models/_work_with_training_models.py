@@ -6,6 +6,7 @@ import typing as tp
 
 from scipy import sparse
 
+from recommender_system_api.backend.work_with_database import check_model
 from recommender_system_api.backend.work_with_models import *
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
@@ -15,9 +16,9 @@ __all__ = [
     'NOT_TRAIN_STATUS',
     'TRAIN_STATUS',
     'TrainThread',
-    'add_thread',
-    'delete_thread',
-    'check_status_thread'
+    'add_model_to_train_system',
+    'delete_training_model',
+    'check_status_of_system'
 ]
 
 ERROR_STATUS = 'ERROR'
@@ -27,34 +28,34 @@ TRAIN_STATUS = 'TRAINING'
 
 def _async_raise(tid, exc_type):
     if not inspect.isclass(exc_type):
-        raise TypeError("Only types can be raised (not instances)")
+        raise TypeError('Only types can be raised (not instances)')
     res = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(tid), ctypes.py_object(exc_type))
     if res == 0:
-        raise ValueError("invalid thread id")
+        raise ValueError('Invalid thread id')
     elif res != 1:
         ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
-        raise SystemError("PyThreadState_SetAsyncExc failed")
+        raise SystemError('PyThreadState_SetAsyncExc failed')
 
 
 class TrainThread(threading.Thread):
 
-    def __init__(self, system_id: int, user_id: int, model: AbstractRecommenderSystem, data: sparse.coo_matrix,
+    def __init__(self, user_id: int, system_id: int, model: AbstractRecommenderSystem, data: sparse.coo_matrix,
                  train_parameters: tp.Dict[str, tp.Any]) -> None:
         super().__init__()
-        self.__system_id = system_id
-        self.__user_id = user_id
-        self.__model = model
-        self.__data = data
-        self.__train_parameters = train_parameters
+        self._system_id = system_id
+        self._user_id = user_id
+        self._model = model
+        self._data = data
+        self._train_parameters = train_parameters
         self.is_training = True
         self.is_error = False
 
     def _get_my_tid(self):
         if not self.is_alive():
-            raise threading.ThreadError("the thread is not active")
+            raise threading.ThreadError('The thread is not active')
 
         # do we have it cached?
-        if hasattr(self, "_thread_id"):
+        if hasattr(self, '_thread_id'):
             return self._thread_id
 
         # no, look for it in the _active dict
@@ -63,15 +64,15 @@ class TrainThread(threading.Thread):
                 self._thread_id = tid
                 return tid
 
-        raise AssertionError("could not determine the thread's id")
+        raise AssertionError('Could not determine the thread id')
 
     def run(self) -> None:
         try:
-            if self.__model.is_trained:
-                self.__model.refit(self.__data, **self.__train_parameters)
+            if self._model.is_trained:
+                self._model.refit(self._data, **self._train_parameters)
             else:
-                self.__model.fit(self.__data, **self.__train_parameters)
-            save_model(self.__system_id, self.__user_id, self.__model, is_clear=True)
+                self._model.fit(self._data, **self._train_parameters)
+            save_model(self._system_id, self._user_id, self._model, is_clear=True)
         except Exception:
             self.is_error = True
         finally:
@@ -87,19 +88,21 @@ class TrainThread(threading.Thread):
 __training_threads: tp.Dict[int, TrainThread] = dict()
 
 
-# TODO CHECK MODEL FOR USER ID
+def add_model_to_train_system(user_id: int, system_id: int, thread: TrainThread) -> None:
 
-
-def add_thread(system_id: int, thread: TrainThread) -> bool:
+    if not check_model(user_id, system_id):
+        raise ValueError
 
     if thread.is_error:
-        return False
+        raise ValueError
 
     __training_threads[system_id] = thread
-    return True
 
 
-def delete_thread(system_id) -> None:
+def delete_training_model(user_id: int, system_id: int) -> None:
+
+    if not check_model(user_id, system_id):
+        raise ValueError
 
     if system_id not in __training_threads:
         return
@@ -108,7 +111,10 @@ def delete_thread(system_id) -> None:
     del __training_threads[system_id]
 
 
-def check_status_thread(system_id) -> str:
+def check_status_of_system(user_id: int, system_id: int) -> str:
+
+    if not check_model(user_id, system_id):
+        raise ValueError
 
     if system_id not in __training_threads:
         return NOT_TRAIN_STATUS
@@ -117,6 +123,6 @@ def check_status_thread(system_id) -> str:
         return TRAIN_STATUS
 
     status = ERROR_STATUS if __training_threads[system_id].is_error else NOT_TRAIN_STATUS
-    delete_thread(system_id)
+    delete_training_model(user_id, system_id)
 
     return status

@@ -4,7 +4,12 @@ import secrets
 import sqlite3
 
 from recommender_system_api.backend.work_with_database._settings import PATH_TO_DATABASE
-from recommender_system_api.backend.work_with_database._file_system import check_path_exist
+from recommender_system_api.backend.work_with_database._work_with_file_system import check_path_exist
+
+
+__all__ = [
+    'insert_new_model', 'insert_new_user', 'check_model', 'check_user', 'delete_model'
+]
 
 
 PATH_TO_DATABASE_TABLE_WITH_MODELS = f'{PATH_TO_DATABASE}/database.db'
@@ -32,7 +37,6 @@ def __create_database() -> None:
 
 
 def __check_table() -> None:
-
     if not check_path_exist(PATH_TO_DATABASE_TABLE_WITH_MODELS):
         __create_database()
 
@@ -82,7 +86,7 @@ def insert_new_user() -> str:
     return token
 
 
-def check_model(system_id: int, user_id: int) -> bool:
+def check_model(user_id: int, system_id: int) -> bool:
 
     __check_table()
 
@@ -96,7 +100,7 @@ def check_model(system_id: int, user_id: int) -> bool:
     return rows_count == 1
 
 
-def check_user(token: str) -> tp.Optional[int]:
+def check_user(token: str) -> bool:
 
     __check_table()
 
@@ -108,12 +112,12 @@ def check_user(token: str) -> tp.Optional[int]:
         result = cursor.fetchall()
 
     if len(result) != 1:
-        return None
+        raise ValueError
 
     return result[0][0]
 
 
-def delete_model(system_id: int, user_id: int) -> None:
+def delete_model(user_id: int, system_id: int) -> None:
 
     __check_table()
 

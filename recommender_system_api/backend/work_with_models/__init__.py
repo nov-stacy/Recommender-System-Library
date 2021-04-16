@@ -1,3 +1,3 @@
-from ._models import *
-from ._params import *
-from ._training_threads import *
+from ._work_with_models import *
+from ._work_with_params import *
+from ._work_with_training_models import *
