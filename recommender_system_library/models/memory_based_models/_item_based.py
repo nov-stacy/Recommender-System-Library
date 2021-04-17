@@ -31,7 +31,7 @@ class ItemBasedModel(AbstractRecommenderSystemTrainWithOneEpoch):
             when predicting an estimate for an item
         """
 
-        if type(k_nearest_neighbours) != int:
+        if type(k_nearest_neighbours) not in [int, np.int64]:
             raise TypeError('k_nearest_neighbours should have integer type')
 
         if k_nearest_neighbours <= 0:

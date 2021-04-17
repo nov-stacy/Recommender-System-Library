@@ -5,7 +5,7 @@ import numpy as np
 __all__ = ['recall_k']
 
 
-def __one_user_recall(true_indices: np.ndarray, predicted_indices: np.ndarray) -> float:
+def _one_user_recall(true_indices: np.ndarray, predicted_indices: np.ndarray) -> float:
     """
     Method to calculate Recall@k for one user
 
@@ -70,7 +70,7 @@ def recall_k(true_indices: tp.List[np.ndarray], predicted_indices: tp.List[np.nd
     """
 
     def one_user_recall(index) -> float:
-        return __one_user_recall(true_indices[index], predicted_indices[index])
+        return _one_user_recall(true_indices[index], predicted_indices[index])
 
     if type(true_indices) != list or type(predicted_indices) != list:
         raise TypeError('Input values need to have list format')

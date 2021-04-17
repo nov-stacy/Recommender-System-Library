@@ -28,12 +28,13 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         users_count: int
             Number of users in the system
         """
-        quotient_matrix = self._items_matrix.T.dot(self._items_matrix)
-        cho_decomposition = sla.cho_factor(quotient_matrix)
 
         for index in range(users_count):
-            vector = self._items_matrix.T.dot(self._data.getrow(index).todense().T)
-            self._users_matrix[index, :] = sla.cho_solve(cho_decomposition, vector).flatten()
+            ith_row = self._implicit_data_with_reg.getrow(index).toarray()
+            quotient_matrix = (ith_row * self._items_matrix.T).dot(self._items_matrix)
+            self._users_matrix[index, :] = \
+                sla.solve(quotient_matrix,
+                          self._items_matrix.T.dot(ith_row.T * self._implicit_data.getrow(index).toarray().T)).flatten()
 
     def _calculate_items_matrix(self, items_count):
         """
@@ -45,17 +46,18 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
             Number of items in the system
         """
 
-        quotient_matrix = self._users_matrix.T.dot(self._users_matrix)
-        cho_decomposition = sla.cho_factor(quotient_matrix)
-
         for index in range(items_count):
-            vector = self._users_matrix.T.dot(self._data.getcol(index).todense())
-            self._items_matrix[index, :] = sla.cho_solve(cho_decomposition, vector).flatten()
+            ith_row = self._implicit_data_with_reg.getrow(index).toarray()
+            ith_col = self._implicit_data_with_reg.getcol(index).toarray()
+            quotient_matrix = (ith_row * self._items_matrix.T).dot(self._users_matrix)
+            self._items_matrix[index, :] = \
+                sla.solve(quotient_matrix,
+                          self._users_matrix.T.dot(ith_col * self._implicit_data.getcol(index).toarray())).flatten()
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
-        matrix_ones = sparse.coo_matrix(np.ones(self._implicit_data.shape))
-
         self._data = data
+
+        matrix_ones = sparse.coo_matrix(np.ones(data.shape))
 
         # determining the matrices of implicit data
         self._implicit_data: sparse.coo_matrix = (data != 0).astype(int)

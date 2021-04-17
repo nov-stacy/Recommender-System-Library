@@ -4,7 +4,7 @@ from scipy import sparse as sparse
 from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
 
 
-class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
+class ImplicitStochasticLatentFactorModel(EmbeddingsRecommenderSystem):
     """
     A model based on the fact that any signals from the user are better than their absence.
 
@@ -38,7 +38,7 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
         self._user_regularization: float = user_regularization
         self._item_regularization: float = item_regularization
 
-    def __calculate_delta(self, user_index: int, item_index: int, rating: float, indicator: int) -> float:
+    def _calculate_delta(self, user_index: int, item_index: int, rating: float, indicator: int) -> float:
         """
         Method for calculate the difference between the original rating matrix and the matrix
         that was obtained at this point in time
@@ -67,7 +67,7 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
         implicit_item = np.asscalar(self._implicit_items[item_index])
         return (indicator - implicit_user - implicit_item - similarity) * (1 + self._influence * rating)
 
-    def __calculate_users_matrix(self, user_index: int, item_index: int, delta: float) -> None:
+    def _calculate_users_matrix(self, user_index: int, item_index: int, delta: float) -> None:
         """
         Method for finding a row of users matrix
 
@@ -85,7 +85,7 @@ class StochasticImplicitLatentFactorModel(EmbeddingsRecommenderSystem):
         # changing hidden variables for the user
         self._users_matrix[user_index] += self._rate * (delta * self._items_matrix[item_index] - user_reg)
 
-    def __calculate_items_matrix(self, user_index: int, item_index: int, delta: float) -> None:
+    def _calculate_items_matrix(self, user_index: int, item_index: int, delta: float) -> None:
         """
         Method for finding a row of users matrix
 

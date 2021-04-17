@@ -11,7 +11,7 @@ from recommender_system_library.models.latent_factor_models import *
 from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
 
 
-PACKAGE_FOR_RESULT_PLOTS = '../data_result_plots/debug_experiment'
+RESULTS_PACKAGE = '../data_result_plots/debug_experiment'
 
 
 def get_debug_values(model: EmbeddingsRecommenderSystem, data: sparse.coo_matrix, epochs: int):
@@ -24,7 +24,7 @@ def create_plot(debug_values: tp.List[float], data_name: str, model_name: str):
     plt.title(model_name)
     plt.xlabel('Iteration number')
     plt.ylabel('Error functional')
-    plt.savefig(f'{PACKAGE_FOR_RESULT_PLOTS}/{data_name}/{model_name}.png', bbox_inches='tight')
+    plt.savefig(f'{RESULTS_PACKAGE}/{data_name}/{model_name}.png', bbox_inches='tight')
     plt.clf()
 
 
@@ -39,23 +39,17 @@ def generate_experiment(data_name: str, model: EmbeddingsRecommenderSystem, epoc
 
 def main():
 
-    experiments = [
-        (MATRIX_10, StochasticLatentFactorModel(5, 0.0001), 30),
-        (MATRIX_50, StochasticLatentFactorModel(25, 0.0001), 30),
-        (MATRIX_100, StochasticLatentFactorModel(50, 0.0001), 30),
+    experiments = list()
 
-        (MATRIX_10, AlternatingLeastSquaresModel(5), 30),
-        (MATRIX_50, AlternatingLeastSquaresModel(25), 30),
-        (MATRIX_100, AlternatingLeastSquaresModel(50), 30),
-
-        (MATRIX_10, HierarchicalAlternatingLeastSquaresModel(5), 30),
-        (MATRIX_50, HierarchicalAlternatingLeastSquaresModel(25), 30),
-        (MATRIX_100, HierarchicalAlternatingLeastSquaresModel(50), 30),
-
-        (MATRIX_10, StochasticImplicitLatentFactorModel(5, 0.0001), 30),
-        (MATRIX_50, StochasticImplicitLatentFactorModel(25, 0.0001), 30),
-        (MATRIX_100, StochasticImplicitLatentFactorModel(50, 0.0001), 30),
-    ]
+    for data, dimension in zip([MATRIX_10, MATRIX_50, MATRIX_100], [5, 25, 50]):
+        experiments.extend([
+            (data, StochasticLatentFactorModel(dimension, 0.0001), 30),
+            (data, AlternatingLeastSquaresModel(dimension), 30),
+            (data, HierarchicalAlternatingLeastSquaresModel(dimension), 30),
+            (data, ImplicitStochasticLatentFactorModel(dimension, 0.0001), 30),
+            #(data, ImplicitAlternatingLeastSquaresModel(dimension), 30),
+            (data, ImplicitHierarchicalAlternatingLeastSquaresModel(dimension), 30),
+        ])
 
     for data_name, model, epoch in experiments:
         generate_experiment(data_name, model, epoch)

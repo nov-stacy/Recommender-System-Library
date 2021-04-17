@@ -26,7 +26,7 @@ MODELS_CLASSES = tuple([
     memory_based_models.UserBasedModel, memory_based_models.ItemBasedModel,
     latent_factor_models.AlternatingLeastSquaresModel, latent_factor_models.HierarchicalAlternatingLeastSquaresModel,
     latent_factor_models.StochasticLatentFactorModel, latent_factor_models.SingularValueDecompositionModel,
-    implicit_models.StochasticImplicitLatentFactorModel
+    implicit_models.ImplicitStochasticLatentFactorModel
 ])
 
 

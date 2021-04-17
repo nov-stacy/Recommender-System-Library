@@ -4,7 +4,7 @@ from scipy import sparse as sparse
 from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
 
 
-class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
+class ImplicitHierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
     """
     A model based only on the ratings.
 
@@ -79,7 +79,7 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         self._users_matrix[:, index] = self._users_matrix[:, index].T @ delta / denominator
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
-        matrix_ones = sparse.coo_matrix(np.ones(self._implicit_data.shape))
+        matrix_ones = sparse.coo_matrix(np.ones(data.shape))
 
         # determining the matrices of implicit data
         self._implicit_data: sparse.coo_matrix = (data != 0).astype(int)

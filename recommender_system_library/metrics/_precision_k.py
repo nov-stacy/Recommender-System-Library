@@ -5,7 +5,7 @@ import numpy as np
 __all__ = ['precision_k']
 
 
-def __one_user_precision(true_indices: np.ndarray, predicted_indices: np.ndarray) -> float:
+def _one_user_precision(true_indices: np.ndarray, predicted_indices: np.ndarray) -> float:
     """
     Method to calculate Precision@k for one user
 
@@ -70,7 +70,7 @@ def precision_k(true_indices: tp.List[np.ndarray], predicted_indices: tp.List[np
     """
 
     def one_user_precision(index) -> float:
-        return __one_user_precision(true_indices[index], predicted_indices[index])
+        return _one_user_precision(true_indices[index], predicted_indices[index])
 
     if type(true_indices) != list or type(predicted_indices) != list:
         raise TypeError('Input values need to have list format')

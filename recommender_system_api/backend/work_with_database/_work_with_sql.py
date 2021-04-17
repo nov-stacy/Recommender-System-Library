@@ -15,15 +15,15 @@ __all__ = [
 PATH_TO_DATABASE_TABLE_WITH_MODELS = f'{PATH_TO_DATABASE}/database.db'
 
 
-def __create_connection() -> sqlite3.Connection:
+def _create_connection() -> sqlite3.Connection:
     return sqlite3.connect(PATH_TO_DATABASE_TABLE_WITH_MODELS)
 
 
-def __create_cursor(connection: sqlite3.Connection) -> sqlite3.Cursor:
+def _create_cursor(connection: sqlite3.Connection) -> sqlite3.Cursor:
     return connection.cursor()
 
 
-def __create_database() -> None:
+def _create_database() -> None:
 
     sql_1 = 'CREATE TABLE systems (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER)'
     sql_2 = 'CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL)'
@@ -36,12 +36,12 @@ def __create_database() -> None:
         connection.commit()
 
 
-def __check_table() -> None:
+def _check_table() -> None:
     if not check_path_exist(PATH_TO_DATABASE_TABLE_WITH_MODELS):
         __create_database()
 
 
-def __check_token(token: str) -> bool:
+def _check_token(token: str) -> bool:
 
     sql = f'SELECT id FROM users WHERE token = "{token}"'
 

@@ -1,5 +1,7 @@
 import typing as tp
 
+import numpy as np
+
 
 __all__ = [
     'check_format_of_positive_integer', 'check_format_of_str',
@@ -17,7 +19,7 @@ def check_format_of_positive_integer(value: int) -> None:
     value: int
     """
 
-    if type(value) != int:
+    if type(value) not in [int, np.int64]:
         raise TypeError('Value should be int')
 
     if value <= 0:
@@ -50,7 +52,7 @@ def check_format_of_list_with_not_negative_integers(value: tp.List[int]) -> None
         raise TypeError('Value should be list')
 
     for element in value:
-        if type(element) != int:
+        if type(element) not in [int, np.int64]:
             raise TypeError('Values in list should be integers')
         if element < 0:
             raise ValueError('Values in list should be not negative')

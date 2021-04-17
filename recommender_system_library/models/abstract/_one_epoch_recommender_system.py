@@ -104,7 +104,7 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
 
         self._check_trained_and_rise_error()
 
-        if type(user_index) != int:
+        if type(user_index) not in [int, np.int64]:
             raise TypeError('Index should have integer type')
 
         if user_index < 0:
@@ -147,13 +147,13 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
 
         self._check_trained_and_rise_error()
 
-        if type(user_index) != int:
+        if type(user_index) not in [int, np.int64]:
             raise TypeError('Index should have integer type')
 
         if user_index < 0:
             raise ValueError('Index should be positive and less than count of users')
 
-        if type(items_count) != int:
+        if type(items_count) not in [int, np.int64]:
             raise TypeError('Count of items should have integer type')
 
         if items_count <= 0:

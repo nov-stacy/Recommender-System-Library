@@ -85,7 +85,7 @@ def construct_matrix_from_data(rows_indices: np.ndarray, columns_indices: np.nda
     if len(shape) != 2:
         raise ValueError('Shape need to have two values')
 
-    if type(shape[0]) != int or type(shape[1]) != int:
+    if type(shape[0]) not in [int, np.int64] or type(shape[1]) not in [int, np.int64]:
         raise TypeError('Shapes need have int format')
 
     if shape[0] < 0 or shape[1] < 0:

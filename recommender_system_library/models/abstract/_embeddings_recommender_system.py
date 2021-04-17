@@ -132,7 +132,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             The number of singular values to keep
         """
 
-        if type(dimension) != int:
+        if type(dimension) not in [int, np.int64]:
             raise TypeError('Dimension should have integer type')
 
         if dimension <= 0:
@@ -249,7 +249,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         if type(data) != sparse.coo_matrix:
             raise TypeError('Data should be sparse matrix')
         
-        if type(epochs) != int:
+        if type(epochs) not in [int, np.int64]:
             raise TypeError('Number of epochs should have integer')
 
         if epochs <= 0:
@@ -292,7 +292,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         if type(data) != sparse.coo_matrix:
             raise TypeError('Data should be sparse matrix')
 
-        if type(epochs) != int:
+        if type(epochs) not in [int, np.int64]:
             raise TypeError('Number of epochs should have integer')
 
         if epochs <= 0:
@@ -334,7 +334,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
 
         self._check_trained_and_rise_error()
 
-        if type(user_index) != int:
+        if type(user_index) not in [int, np.int64]:
             raise TypeError('Index should have integer type')
 
         if user_index < 0:
@@ -360,13 +360,13 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
 
         self._check_trained_and_rise_error()
 
-        if type(user_index) != int:
+        if type(user_index) not in [int, np.int64]:
             raise TypeError('Index should have integer type')
 
         if user_index < 0:
             raise ValueError('Index should be not negative')
 
-        if type(items_count) != int:
+        if type(items_count) not in [int, np.int64]:
             raise TypeError('Count of items should have integer type')
 
         if items_count <= 0:

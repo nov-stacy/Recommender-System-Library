@@ -8,13 +8,20 @@ from experiments_with_library.experiments_settings import *
 from recommender_system_library.extra_functions.work_with_predict_data import calculate_predicted_items
 from recommender_system_library.extra_functions.work_with_train_data import read_matrix_from_file, get_train_matrix
 from recommender_system_library.metrics import *
-from recommender_system_library.models.implicit_models import *
-from recommender_system_library.models.latent_factor_models import *
-from recommender_system_library.models.memory_based_models import *
+
+from recommender_system_library.models.implicit_models import ImplicitStochasticLatentFactorModel as ISLF
+from recommender_system_library.models.implicit_models import ImplicitAlternatingLeastSquaresModel as IALS
+from recommender_system_library.models.implicit_models import ImplicitHierarchicalAlternatingLeastSquaresModel as IHALS
+from recommender_system_library.models.latent_factor_models import StochasticLatentFactorModel as SLF
+from recommender_system_library.models.latent_factor_models import AlternatingLeastSquaresModel as ALS
+from recommender_system_library.models.latent_factor_models import HierarchicalAlternatingLeastSquaresModel as HALS
+from recommender_system_library.models.latent_factor_models import SingularValueDecompositionModel as SVD
+from recommender_system_library.models.memory_based_models import UserBasedModel as UB
+
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
-PACKAGE_FOR_RESULT_PLOTS = '../data_result_plots/ratings_parameters_experiment'
+RESULTS_PACKAGE = '../data_result_plots/ratings_parameters_experiment'
 
 
 def get_indices(data: sparse.coo_matrix, model: AbstractRecommenderSystem, users_count: int):
@@ -61,12 +68,11 @@ def get_metrics(data: sparse.coo_matrix, x_train: sparse.coo_matrix, model_class
 
 def create_plot(result_metrics: tp.List[float], range_parameters: tp.List[float], data_name: str, model_name: str,
                 parameter_name: str, metric_name: str):
-    path = f'{PACKAGE_FOR_RESULT_PLOTS}/{data_name}/{metric_name}/{parameter_name}_{model_name}.png'
     plt.plot(range_parameters, result_metrics)
     plt.title(model_name)
     plt.xlabel(parameter_name)
     plt.ylabel(metric_name)
-    plt.savefig(path, bbox_inches='tight')
+    plt.savefig(f'{RESULTS_PACKAGE}/{data_name}/{metric_name}/{model_name}_{parameter_name}.png', bbox_inches='tight')
     plt.clf()
 
 
@@ -77,28 +83,58 @@ def generate_experiment(data_name: str, model_class: AbstractRecommenderSystem._
 
     data = read_matrix_from_file(f'{PACKAGE_FOR_TRAIN_DATA}/{data_name}.npz')
     x_train = get_train_matrix(data, 0.2)
-    result_metrics = get_metrics(data, x_train, model_class, name_range_parameter, range_parameters, parameters, train_parameters)
+
+    result_metrics = get_metrics(data, x_train, model_class, name_range_parameter, range_parameters,
+                                 parameters, train_parameters)
+
     for key in result_metrics:
         create_plot(result_metrics[key], range_parameters, data_name, model_name, name_range_parameter, key)
 
 
 def main():
 
-    lr_parameters = {'learning_rate': 0.0001}
-    epoch_parameters = {'epochs': 30}
-
     experiments = list()
     data_list = [MATRIX_10, MATRIX_50, MATRIX_100]
-    params_list = [PARAMS_DIMENSION_10, PARAMS_DIMENSION_50, PARAMS_DIMENSION_100]
 
-    for data, params in zip(data_list, params_list):
+    for data, params in zip(data_list, [PARAMS_KNN_10, PARAMS_KNN_50, PARAMS_KNN_100]):
         experiments.extend([
-            (data, UserBasedModel, 'k_nearest_neighbours', params, {}, {}, 'UserBased'),
-            (data, AlternatingLeastSquaresModel, 'dimension', params, {}, epoch_parameters, 'ALS'),
-            (data, StochasticLatentFactorModel, 'dimension', params, lr_parameters, epoch_parameters, 'SGD'),
-            (data, HierarchicalAlternatingLeastSquaresModel, 'dimension', params, {}, epoch_parameters, 'HALS'),
-            (data, SingularValueDecompositionModel, 'dimension', params, {}, {}, 'SVD'),
-            (data, StochasticImplicitLatentFactorModel, 'dimension', params, lr_parameters, epoch_parameters, 'iSGD')
+            (data, UB, 'k_nearest_neighbours', params, {}, {}, 'UserBased')
+        ])
+
+    for data, params in zip(data_list, [PARAMS_DIMENSION_10, PARAMS_DIMENSION_50, PARAMS_DIMENSION_100]):
+        experiments.extend([
+            (data, SLF, 'dimension', params, {'learning_rate': 0.0001}, {'epochs': 30}, 'SGD'),
+            # (data, ALS, 'dimension', params, {}, {'epochs': 30}, 'ALS'),
+            (data, HALS, 'dimension', params, {}, {'epochs': 30}, 'HALS'),
+            (data, ISLF, 'dimension', params, {'learning_rate': 0.0001}, {'epochs': 30}, 'iSGD'),
+            # (data, IALS, 'dimension', params, {}, {'epochs': 30}, 'iALS'),
+            (data, IHALS, 'dimension', params, {}, {'epochs': 30}, 'iHALS'),
+            (data, SVD, 'dimension', params, {}, {}, 'SVD')
+        ])
+
+    for data, params, dimension in zip(data_list, [PARAMS_LEARNING_RATE] * 3, [5, 25, 50]):
+        experiments.extend([
+            (data, SLF, 'learning_rate', params, {'dimension': dimension}, {'epochs': 30}, 'SGD'),
+            (data, ISLF, 'learning_rate', params, {'dimension': dimension}, {'epochs': 30}, 'iSGD')
+        ])
+
+    for data, params, dimension in zip(data_list, [PARAMS_USER_REG] * 3, [5, 25, 50]):
+        experiments.extend([
+            (data, SLF, 'user_regularization', params, {'dimension': dimension, 'learning_rate': 0.0001}, {'epochs': 30}, 'SGD'),
+            (data, ISLF, 'user_regularization', params, {'dimension': dimension, 'learning_rate': 0.0001}, {'epochs': 30}, 'iSGD')
+        ])
+
+    for data, params, dimension in zip(data_list, [PARAMS_ITEM_REG] * 3, [5, 25, 50]):
+        experiments.extend([
+            (data, SLF, 'item_regularization', params, {'dimension': dimension, 'learning_rate': 0.0001}, {'epochs': 30}, 'SGD'),
+            (data, ISLF, 'item_regularization', params, {'dimension': dimension, 'learning_rate': 0.0001}, {'epochs': 30}, 'iSGD')
+        ])
+
+    for data, params, dimension in zip(data_list, [PARAMS_INFLUENCE_REG] * 3, [5, 25, 50]):
+        experiments.extend([
+            (data, ISLF, 'influence_regularization', params, {'dimension': dimension, 'learning_rate': 0.0001}, {'epochs': 30}, 'iSGD'),
+            # (data, IALS, 'influence_regularization', params, {'dimension': dimension}, {'epochs': 30}, 'iALS'),
+            (data, IHALS, 'influence_regularization', params, {'dimension': dimension}, {'epochs': 30}, 'iHALS')
         ])
 
     for experiment_parameters in experiments:
