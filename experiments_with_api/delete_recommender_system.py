@@ -11,8 +11,13 @@ models_indices = list(range(1, len(models_params_dict) + 1))
 
 def main():
 
+    headers = {
+        'token': '<TOKEN>'
+    }
+
     for system_id in models_indices:
-        result_print = 'OK' if requests.delete(URL + str(system_id)).status_code < 300 else 'ERROR'
+        result = requests.delete(URL + str(system_id), headers=headers)
+        result_print = 'OK' if result.status_code < 300 else f'{result.status_code}: {result.json()}'
         print(f'{system_id}: {result_print}')
 
 

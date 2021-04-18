@@ -29,13 +29,17 @@ def main():
     train_matrix = read_matrix_from_file(PATH_TO_DATA)
     x_train_matrix = get_train_matrix(train_matrix, 0.3)
 
+    headers = {
+        'token': '<TOKEN>'
+    }
+
     for system_id in models_params_dict:
         params = {
             'params': models_params_dict[system_id],
             'train_data': codecs.encode(pickle.dumps(x_train_matrix), 'base64').decode()
         }
-        result = requests.post(URL + str(system_id), json=params)
-        result_print = 'OK' if result.status_code < 300 else f'ERROR'
+        result = requests.post(URL + str(system_id), json=params, headers=headers)
+        result_print = 'OK' if result.status_code < 300 else f'{result.status_code}: {result.json()}'
         print(f'{system_id}: {result_print}')
 
 

@@ -35,7 +35,7 @@ def get_list_of_items_from_recommender_system(user_id: int, system_id: int,
 
     # getting the user's index and the number of items
     user_index, items_count = split_data(data, [KEY_USER, KEY_ITEMS_COUNT])
-    check_format_of_positive_integer(user_index)
+    check_format_of_integer(user_index)
     check_format_of_positive_integer(items_count)
 
     model = get_model(user_id, system_id)  # getting a saved model

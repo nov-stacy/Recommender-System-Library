@@ -157,7 +157,7 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
             raise TypeError('Count of items should have integer type')
 
         if items_count <= 0:
-            raise ValueError('Count of items should be positive and less than count of all items')
+            raise ValueError('Count of items should be positive')
 
         return self._predict(user_index, items_count)
 

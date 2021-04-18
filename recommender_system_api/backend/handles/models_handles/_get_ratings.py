@@ -34,7 +34,7 @@ def get_list_of_ratings_from_recommender_system(user_id: int, system_id: int,
     check_dictionary_with_str_keys(data)  # check params
 
     user_index = split_data(data, [KEY_USER])[0]  # get data from request
-    check_format_of_positive_integer(user_index)  # check index of user
+    check_format_of_integer(user_index)  # check index of user
     model = get_model(user_id, system_id)  # getting a saved model
 
     return {KEY_RESULT: list(model.predict_ratings(user_index))}

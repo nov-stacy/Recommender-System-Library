@@ -34,7 +34,7 @@ def create_recommender_system(user_id: int, data: tp.Dict[str, tp.Any]) -> tp.Di
     model = create_model(type_model, params)  # creating a model
 
     # saving a new model
-    system_id = save_model(None, user_id, model)
+    system_id = save_model(user_id, None, model)
     save_parameters(user_id, system_id, data)
 
     return {KEY_ID: system_id}

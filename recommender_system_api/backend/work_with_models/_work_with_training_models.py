@@ -6,7 +6,7 @@ import typing as tp
 
 from scipy import sparse
 
-from recommender_system_api.backend.work_with_database import check_model
+from recommender_system_api.backend.work_with_database import check_model_in_table
 from recommender_system_api.backend.work_with_models import *
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
@@ -72,7 +72,7 @@ class TrainThread(threading.Thread):
                 self._model.refit(self._data, **self._train_parameters)
             else:
                 self._model.fit(self._data, **self._train_parameters)
-            save_model(self._system_id, self._user_id, self._model, is_clear=True)
+            save_model(self._user_id, self._system_id, self._model, is_clear=True)
         except Exception:
             self.is_error = True
         finally:
@@ -90,31 +90,32 @@ __training_threads: tp.Dict[int, TrainThread] = dict()
 
 def add_model_to_train_system(user_id: int, system_id: int, thread: TrainThread) -> None:
 
-    if not check_model(user_id, system_id):
-        raise ValueError
+    if not check_model_in_table(user_id, system_id):
+        raise AttributeError('No access to this model')
 
     if thread.is_error:
-        raise ValueError
+        raise ValueError('Error in training')
 
     __training_threads[system_id] = thread
 
 
 def delete_training_model(user_id: int, system_id: int) -> None:
 
-    if not check_model(user_id, system_id):
-        raise ValueError
+    if not check_model_in_table(user_id, system_id):
+        raise AttributeError('No access to this model')
 
     if system_id not in __training_threads:
         return
 
-    __training_threads[system_id].terminate()
+    if __training_threads[system_id].is_alive():
+        __training_threads[system_id].terminate()
     del __training_threads[system_id]
 
 
 def check_status_of_system(user_id: int, system_id: int) -> str:
 
-    if not check_model(user_id, system_id):
-        raise ValueError
+    if not check_model_in_table(user_id, system_id):
+        raise AttributeError('No access to this model')
 
     if system_id not in __training_threads:
         return NOT_TRAIN_STATUS

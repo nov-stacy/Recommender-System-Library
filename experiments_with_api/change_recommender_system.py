@@ -22,12 +22,16 @@ models_params_dict: tp.Dict[str, tp.Dict[str, tp.Any]] = {
 
 def main():
 
+    headers = {
+        'token': '<TOKEN>'
+    }
+
     for system_id in models_params_dict:
         params = {
             'params': models_params_dict[system_id]
         }
-        result = requests.post(URL + str(system_id), json=params)
-        result_print = 'OK' if result.status_code < 300 else f'ERROR'
+        result = requests.post(URL + str(system_id), json=params, headers=headers)
+        result_print = 'OK' if result.status_code < 300 else f'{result.status_code}: {result.json()}'
         print(f'{system_id}: {result_print}')
 
 

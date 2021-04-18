@@ -16,7 +16,7 @@ def split_data(data: tp.Dict[str, tp.Any], parameters: tp.List[str]) -> tp.List[
 
     if set(data.keys()) != set(parameters):
         raise ValueError
-    return [data[parameter] for parameter in data]
+    return [data[parameter] for parameter in parameters]
 
 
 def merge_data(params_names: tp.List[str], values: tp.List[tp.Any]) -> tp.Dict[str, tp.Any]:

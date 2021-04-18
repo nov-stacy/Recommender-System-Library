@@ -52,7 +52,7 @@ class ItemBasedModel(AbstractRecommenderSystemTrainWithOneEpoch):
         self._knn.fit(self._data.transpose())
 
     def _predict_ratings(self, user_index: int) -> np.ndarray:
-        raise AttributeError
+        raise AttributeError('Item Based Model dont have method for predicting ratings')
 
     def _predict(self, user_index, items_count: int) -> np.ndarray:
         # getting the indices of all items that the user has viewed

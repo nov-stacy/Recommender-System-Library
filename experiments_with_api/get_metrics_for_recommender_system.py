@@ -16,12 +16,16 @@ models_indices = list(range(1, len(models_params_dict) + 1))
 metrics = ['precision', 'recall']
 users_list = list(range(10))
 predict_params = {
-    'k_items': list(range(10)),
+    'k_items': list(range(1, 11)),
     'barrier_value': list(np.arange(0.1, 1, 0.1))
 }
 
 
 def main():
+
+    headers = {
+        'token': '<TOKEN>'
+    }
 
     test_matrix = read_matrix_from_file(PATH_TO_DATA)
 
@@ -37,10 +41,9 @@ def main():
                         'predict_parameter_value': parameter_value,
                     }
 
-                    result = requests.get(f'{URL}/{metric}/{system_id}', json=params)
-                    result_print = result.json()['result'] if result.status_code < 300 else 'ERROR'
-                    print(f'{system_id}, metric: {metric}, parameter: {parameter}, '
-                          f'parameter_value: {parameter_value}, result: {result_print}')
+                    result = requests.get(f'{URL}/{metric}/{system_id}', json=params, headers=headers)
+                    result_print = result.json()['result'] if result.status_code < 300 else f'{result.status_code}: {result.json()}'
+                    print(f'{system_id}, metric: {metric}, parameter: {parameter}, parameter_value: {parameter_value}, result: {result_print}')
 
 
 if __name__ == '__main__':

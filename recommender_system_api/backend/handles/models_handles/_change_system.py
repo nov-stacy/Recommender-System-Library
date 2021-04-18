@@ -47,5 +47,5 @@ def change_recommender_system(user_id: int, system_id: int, data: tp.Dict[str, t
     delete_training_model(user_id, system_id)  # deleting training the old model
 
     # saving a new model
-    save_model(system_id, model, user_id)
+    save_model(user_id, system_id, model)
     save_parameters(user_id, system_id, merge_data([KEY_TYPE, KEY_PARAMS], [type_model, params]))

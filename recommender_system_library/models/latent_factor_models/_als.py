@@ -1,3 +1,4 @@
+import numpy as np
 from scipy import sparse as sparse
 import scipy.linalg as sla
 
@@ -24,46 +25,43 @@ class AlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
 
         super().__init__(dimension)
 
-    def _calculate_users_matrix(self, users_count: int) -> None:
+    def _calculate_users_matrix(self) -> None:
         """
         Method for finding a matrix for users analytically
-
-        Parameters
-        ----------
-        users_count: int
-            Number of users in the system
         """
+
         quotient_matrix = self._items_matrix.T.dot(self._items_matrix)
-        cho_decomposition = sla.cho_factor(quotient_matrix)
+        try:
+            cho_decomposition = sla.cho_factor(quotient_matrix)
+            for index in range(self._users_matrix.shape[0]):
+                self._users_matrix[index, :] = sla.cho_solve(cho_decomposition, self._items_matrix.T.dot(self._data.getrow(index).todense().T)).flatten()
+        except (np.linalg.LinAlgError, sla.LinAlgError):
+            pinv_result = np.linalg.pinv(quotient_matrix)
+            for index in range(self._users_matrix.shape[0]):
+                self._users_matrix[index, :] = pinv_result.dot(self._items_matrix.T.dot(self._data.getrow(index).todense().T)).flatten()
 
-        for index in range(users_count):
-            vector = self._items_matrix.T.dot(self._data.getrow(index).todense().T)
-            self._users_matrix[index, :] = sla.cho_solve(cho_decomposition, vector).flatten()
-
-    def _calculate_items_matrix(self, items_count: int) -> None:
+    def _calculate_items_matrix(self) -> None:
         """
         Method for finding a matrix for items analytically
-
-        Parameters
-        ----------
-        items_count: int
-            Number of items in the system
         """
 
         quotient_matrix = self._users_matrix.T.dot(self._users_matrix)
-        cho_decomposition = sla.cho_factor(quotient_matrix)
-
-        for index in range(items_count):
-            vector = self._users_matrix.T.dot(self._data.getcol(index).todense())
-            self._items_matrix[index, :] = sla.cho_solve(cho_decomposition, vector).flatten()
+        try:
+            cho_decomposition = sla.cho_factor(quotient_matrix)
+            for index in range(self._items_matrix.shape[0]):
+                self._items_matrix[index, :] = sla.cho_solve(cho_decomposition, self._users_matrix.T.dot(self._data.getcol(index).todense())).flatten()
+        except (np.linalg.LinAlgError, sla.LinAlgError):
+            pinv_result = np.linalg.pinv(quotient_matrix)
+            for index in range(self._users_matrix.shape[0]):
+                self._users_matrix[index, :] = pinv_result.dot(self._items_matrix.T.dot(self._data.getrow(index).todense().T)).flatten()
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data
 
     def _train_one_epoch(self) -> None:
         # calculate matrices for users and items analytically
-        self._calculate_users_matrix(self._users_count)
-        self._calculate_items_matrix(self._items_count)
+        self._calculate_users_matrix()
+        self._calculate_items_matrix()
 
     def __str__(self) -> str:
         return f'ALS [dimension = {self._dimension}]'

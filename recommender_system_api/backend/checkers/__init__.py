@@ -4,10 +4,23 @@ import numpy as np
 
 
 __all__ = [
-    'check_format_of_positive_integer', 'check_format_of_str',
+    'check_format_of_integer', 'check_format_of_positive_integer', 'check_format_of_str',
     'check_format_of_list_with_not_negative_integers',
     'check_dictionary_with_str_keys'
 ]
+
+
+def check_format_of_integer(value: int) -> None:
+    """
+    Method to check value for integer
+
+    Parameters
+    ----------
+    value: int
+    """
+
+    if type(value) not in [int, np.int64]:
+        raise TypeError('Value should be int')
 
 
 def check_format_of_positive_integer(value: int) -> None:
@@ -19,8 +32,7 @@ def check_format_of_positive_integer(value: int) -> None:
     value: int
     """
 
-    if type(value) not in [int, np.int64]:
-        raise TypeError('Value should be int')
+    check_format_of_integer(value)
 
     if value <= 0:
         raise ValueError('Value should be positive')
