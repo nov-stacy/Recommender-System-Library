@@ -31,6 +31,9 @@ def _one_user_recall(true_indices: np.ndarray, predicted_indices: np.ndarray) ->
     if type(true_indices) != np.ndarray or type(predicted_indices) != np.ndarray:
         raise TypeError('Indices need to have numpy array format')
 
+    if len(true_indices.shape) != 1 or len(predicted_indices.shape) != 1:
+        raise ValueError('Indices need to be 1D array')
+
     if true_indices.shape[0] and true_indices.dtype != np.int or \
             predicted_indices.shape[0] and predicted_indices.dtype != np.int:
         raise TypeError('Arrays should store indices')

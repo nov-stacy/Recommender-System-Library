@@ -13,7 +13,7 @@ __all__ = [
     f'PARAMS_DIMENSION_{name}' for name in [10, 50, 100]
 ] + [
     'PARAMS_LEARNING_RATE', 'PARAMS_USER_REG', 'PARAMS_ITEM_REG',
-    'PARAMS_INFLUENCE_REG'
+    'PARAMS_INFLUENCE_REG', 'DEBUG_NAMES'
 ]
 
 PACKAGE_FOR_TRAIN_DATA = '../data_train/matrices'
@@ -34,3 +34,5 @@ PARAMS_DIMENSION_50 = _np.arange(1, 50, 2)
 PARAMS_DIMENSION_100 = _np.arange(1, 100, 2)
 
 PARAMS_LEARNING_RATE = PARAMS_USER_REG = PARAMS_ITEM_REG = PARAMS_INFLUENCE_REG = _np.arange(0, 1, 0.1)
+
+DEBUG_NAMES = ['mse', 'rmse', 'mae']

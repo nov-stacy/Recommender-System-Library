@@ -6,6 +6,7 @@ import numpy as np
 from scipy import sparse
 from tqdm import tqdm
 
+from recommender_system_library.metrics import mean_square_error, mean_absolute_error, root_mean_square_error
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
@@ -17,31 +18,38 @@ class EmbeddingDebug:
     A class for determining the behavior if it is necessary to remember the error change on each epoch
     """
 
+    __debugging_function_values = {
+        'mse': mean_square_error,
+        'mae': mean_absolute_error,
+        'rmse': root_mean_square_error
+    }
+
     def __init__(self) -> None:
         self._debug_information: tp.Optional[tp.List[float]] = None  # array with errors on each epoch
 
-        # matrices with latent features
-        self._users_matrix: np.ndarray = np.array([])
-        self._items_matrix: np.ndarray = np.array([])
+        self._debug_function = None  # error function
 
-    def update(self, is_debug: bool) -> None:
+    def update(self, debug_name: tp.Optional[str]) -> None:
         """
         Checking whether the debugger will be enabled
 
         Parameters
         ----------
-        is_debug: bool
-            Indicator of the need to maintain the error functionality on each epoch
+        debug_name: str or None
+            Name of the debugging function (mse, mae, rmse)
         """
 
-        if type(is_debug) != bool:
-            raise TypeError('Debug indices should have bool type')
+        if debug_name is not None and type(debug_name) != str:
+            raise TypeError('Debug name should have string type')
 
-        self._debug_information = [] if is_debug else None
+        if debug_name is not None and debug_name not in self.__debugging_function_values:
+            raise ValueError(f'Debug should be in [{", ".join(self.__debugging_function_values.keys())}]')
+
+        self._debug_information = [] if debug_name else None
+        self._debug_function = self.__debugging_function_values[debug_name] if debug_name else None
 
     def set(self, users_indices: np.ndarray, items_indices: np.ndarray, ratings: np.ndarray,
-            users_matrix: np.ndarray, items_matrix: np.ndarray,
-            mean_users: np.ndarray, mean_items: np.ndarray) -> None:
+            users_matrix: np.ndarray, items_matrix: np.ndarray) -> None:
         """
         Calculate functional of error
 
@@ -57,19 +65,17 @@ class EmbeddingDebug:
             Matrix of users with latent features
         items_matrix: numpy array
             Matrix of items with latent features
-        mean_users: numpy array
-            Average values for users ratings
-        mean_items: numpy array
-            Average values for items ratings
         """
 
+        if self._debug_function is None:
+            return
+
         if not(type(users_indices) == type(items_indices) == type(ratings) == type(users_matrix) ==
-               type(items_matrix) == type(mean_users) == type(mean_items) == np.ndarray):
+               type(items_matrix) == np.ndarray):
             raise TypeError('All data should be numpy array type')
 
         data_shapes = [users_indices.shape, items_indices.shape, ratings.shape]
         matrix_shapes = [users_matrix.shape, items_matrix.shape]
-        mean_shapes = [mean_users.shape, mean_items.shape]
 
         if not(len(data_shapes[0]) == len(data_shapes[1]) == len(data_shapes[2]) == 1):
             raise ValueError('Arrays should be 1D')
@@ -83,22 +89,15 @@ class EmbeddingDebug:
         if not(matrix_shapes[0][1] == matrix_shapes[1][1]):
             raise ValueError('users_matrix and items_matrix should have same dimension')
 
-        if not(len(mean_shapes[0]) == len(mean_shapes[1]) == 2) or not(mean_shapes[0][1] == mean_shapes[1][1] == 1):
-            raise ValueError('Means should be 2D: (1, N)')
-
-        if not(mean_shapes[0][0] == matrix_shapes[0][0] and mean_shapes[1][0] == matrix_shapes[1][0]):
-            raise ValueError('Means and matrices should have same sizes')
-
-        result: float = 0  # error functionality
+        true_ratings = list()
+        predicted_ratings = list()
 
         # for each user and item for which the ratings are known
         for user_index, item_index, rating in zip(users_indices, items_indices, ratings):
-            # similarity between user and item
-            similarity = users_matrix[user_index] @ items_matrix[item_index].T
-            # adding to the functionality
-            result += (rating - mean_users[user_index] - mean_items[item_index] - similarity) ** 2
+            true_ratings.append(rating)
+            predicted_ratings.append(users_matrix[user_index] @ items_matrix[item_index].T)
 
-        self._debug_information.append(np.asscalar(result))
+        self._debug_information.append(self._debug_function([np.array(true_ratings)], [np.array(predicted_ratings)]))
 
     def get(self) -> tp.List[float]:
         """
@@ -164,11 +163,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         self._users_matrix: np.ndarray = np.random.randn(self._users_count, self._dimension)
         self._items_matrix: np.ndarray = np.random.randn(self._items_count, self._dimension)
 
-        # determining average values for users and items
-        self._mean_users: np.ndarray = np.array(data.mean(axis=1))
-        self._mean_items: np.ndarray = np.array(data.mean(axis=0).transpose())
-
-    def _create_information_for_debugging(self, data: sparse.coo_matrix, is_debug: bool):
+    def _create_information_for_debugging(self, data: sparse.coo_matrix, debug_name: tp.Optional[str]):
         """
         Method for determining the matrix of hidden features for the users and items
 
@@ -177,11 +172,11 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         data: sparse matrix
             2-D matrix, where rows are users, and columns are items and at the intersection
             of a row and a column is the rating that this user has given to this item
-        is_debug: bool
-            Indicator of the need to maintain the error functionality on each epoch
+        debug_name: str or None
+            Name of the debugging function (mse, mae, rmse)
         """
 
-        if is_debug:
+        if debug_name:
             # determining known ratings
             self._users_indices: tp.Optional[np.ndarray] = data.row
             self._items_indices: tp.Optional[np.ndarray] = data.col
@@ -209,7 +204,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         Method for teaching a method during a single epoch
         """
 
-    def _fit(self, epochs: int, is_debug: bool = False) -> None:
+    def _fit(self, epochs: int, debug_name: tp.Optional[str]) -> None:
         """
         Method for training a model
 
@@ -217,17 +212,18 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         ----------
         epochs: int
             The number of epochs that the method must pass
-        is_debug: bool
-            Indicator of the need to maintain the error functionality on each epoch
+        debug_name: str or None
+            Name of the debugging function (mse, mae, rmse)
         """
 
         for _ in tqdm(range(epochs)):
             self._train_one_epoch()
-            if is_debug:
+            if debug_name:
                 self.debug_information.set(self._users_indices, self._items_indices, self._ratings,
-                                           self._users_matrix, self._items_matrix, self._mean_users, self._mean_items)
+                                           self._users_matrix, self._items_matrix)
 
-    def fit(self, data: sparse.coo_matrix, epochs: int, is_debug: bool = False) -> 'EmbeddingsRecommenderSystem':
+    def fit(self, data: sparse.coo_matrix, epochs: int,
+            debug_name: tp.Optional[str] = None) -> 'EmbeddingsRecommenderSystem':
         """
         Method for training a model
 
@@ -238,8 +234,8 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             of a row and a column is the rating that this user has given to this item
         epochs: int
             The number of epochs that the method must pass
-        is_debug: bool
-            Indicator of the need to maintain the error functionality on each epoch
+        debug_name: str or None
+            Name of the debugging function (mse, mae, rmse)
 
         Returns
         -------
@@ -255,20 +251,20 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         if epochs <= 0:
             raise ValueError('Number of epochs should be positive')
 
-        if type(is_debug) != bool:
-            raise TypeError('Indicator of debug should have bool type')
+        if debug_name is not None and type(debug_name) != str:
+            raise TypeError('Debug name should have string type')
 
-        self.debug_information.update(is_debug)
+        self.debug_information.update(debug_name)
         self._create_user_items_matrix(data)
-        self._create_information_for_debugging(data, is_debug)
+        self._create_information_for_debugging(data, debug_name)
         self._before_fit(data)
-        self._fit(epochs, is_debug)
+        self._fit(epochs, debug_name)
         self._is_trained = True
 
         return self
 
     def refit(self, data: sparse.coo_matrix,
-              epochs: int = 100, is_debug: bool = False) -> 'EmbeddingsRecommenderSystem':
+              epochs: int = 100, debug_name: tp.Optional[str] = None) -> 'EmbeddingsRecommenderSystem':
         """
         Method for retrain model
 
@@ -279,8 +275,8 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             of a row and a column is the rating that this user has given to this item
         epochs: int
             The number of epochs that the method must pass
-        is_debug: bool
-            Indicator of the need to maintain the error functionality on each epoch
+        debug_name: str or None
+            Name of the debugging function (mse, mae, rmse)
 
         Returns
         -------
@@ -298,8 +294,8 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         if epochs <= 0:
             raise ValueError('Number of epochs should be positive')
 
-        if type(is_debug) != bool:
-            raise TypeError('Indicator of debug should have bool type')
+        if debug_name is not None and type(debug_name) != str:
+            raise TypeError('Debug name should have string type')
 
         # add new users to matrix
         if data.shape[0] > self._users_count:
@@ -311,10 +307,10 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
             matrix_part = np.random.randn(data.shape[1] - self._items_count, self._dimension)
             self._items_matrix = np.vstack((self._items_matrix, matrix_part))
 
-        self.debug_information.update(is_debug)
-        self._create_information_for_debugging(data, is_debug)
+        self.debug_information.update(debug_name)
+        self._create_information_for_debugging(data, debug_name)
         self._before_fit(data)
-        self._fit(epochs)
+        self._fit(epochs, debug_name)
 
         return self
 

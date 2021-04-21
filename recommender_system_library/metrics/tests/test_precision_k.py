@@ -17,11 +17,13 @@ class TestPrecisionK(unittest.TestCase):
     NOT_TRUE_INDICES_3 = [[0, 1, 2], [1, 2], [0, 1], [1], [0]]
     NOT_TRUE_INDICES_4 = [np.array([0.5]), np.array([0.5]), np.array([0.5]), np.array([0.5]), np.array([0.5])]
     NOT_TRUE_INDICES_5 = [np.array([-1]), np.array([-1]), np.array([-1]), np.array([-1]), np.array([-1])]
+    NOT_TRUE_INDICES_6 = [np.array([[0, 1, 2]]), np.array([[1, 2]]), np.array([[0, 1]]), np.array([[1]]), np.array([[0]])]
     NOT_PREDICTED_INDICES_1 = np.array([1, 2])
     NOT_PREDICTED_INDICES_2 = [np.array([1, 2]), np.array([1, 2, 3])]
     NOT_PREDICTED_INDICES_3 = [[1, 2], [1, 2, 3], [1, 2, 3], [1], [1]]
     NOT_PREDICTED_INDICES_4 = [np.array([0.5]), np.array([0.5]), np.array([0.5]), np.array([0.5]), np.array([0.5])]
     NOT_PREDICTED_INDICES_5 = [np.array([-1]), np.array([-1]), np.array([-1]), np.array([-1]), np.array([-1])]
+    NOT_PREDICTED_INDICES_6 = [np.array([[1, 2]]), np.array([[1, 2, 3]]), np.array([[1, 2, 3]]), np.array([[1]]), np.array([[1]])]
 
     def test_correct_behavior(self) -> None:
         for true, predicted, result in zip(self.TRUE_INDICES, self.PREDICTED_INDICES, self.PRECISION):
@@ -42,3 +44,5 @@ class TestPrecisionK(unittest.TestCase):
         self.assertRaises(ValueError, precision_k, self.TRUE_INDICES, self.NOT_PREDICTED_INDICES_2)
         self.assertRaises(ValueError, precision_k, self.NOT_TRUE_INDICES_5, self.PREDICTED_INDICES)
         self.assertRaises(ValueError, precision_k, self.TRUE_INDICES, self.NOT_PREDICTED_INDICES_5)
+        self.assertRaises(ValueError, precision_k, self.NOT_TRUE_INDICES_6, self.PREDICTED_INDICES)
+        self.assertRaises(ValueError, precision_k, self.TRUE_INDICES, self.NOT_PREDICTED_INDICES_6)

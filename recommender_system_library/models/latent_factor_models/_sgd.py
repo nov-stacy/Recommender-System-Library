@@ -104,6 +104,10 @@ class StochasticLatentFactorModel(EmbeddingsRecommenderSystem):
         self._items_indices: np.ndarray = data.col
         self._ratings: np.ndarray = data.data
 
+        # calculating means of users and items ratings
+        self._mean_users: np.ndarray = np.array(data.mean(axis=1))
+        self._mean_items: np.ndarray = np.array(data.mean(axis=0).transpose())
+
     def _train_one_epoch(self) -> None:
         # shuffle all data
         shuffle_indices = np.arange(self._ratings.shape[0])
