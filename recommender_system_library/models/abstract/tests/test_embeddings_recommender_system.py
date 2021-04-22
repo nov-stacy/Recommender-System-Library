@@ -4,8 +4,8 @@ from unittest import mock
 import numpy as np
 from scipy import sparse
 
-from recommender_system_library.models.abstract._embeddings_recommender_system import EmbeddingDebug
-from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract._embeddings import EmbeddingDebug
+from recommender_system_library.models.abstract import EmbeddingsARS
 
 
 class TestEmbeddingDebug(unittest.TestCase):
@@ -74,15 +74,15 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_create(self):
         for dimension in range(1, 100):
-            embedding = EmbeddingsRecommenderSystem(dimension)
+            embedding = EmbeddingsARS(dimension)
             self.assertEqual(dimension, embedding._dimension)
-        self.assertRaises(TypeError, EmbeddingsRecommenderSystem, '1')
-        self.assertRaises(ValueError, EmbeddingsRecommenderSystem, -1)
+        self.assertRaises(TypeError, EmbeddingsARS, '1')
+        self.assertRaises(ValueError, EmbeddingsARS, -1)
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_create_user_items_matrix(self):
         for dimension in range(1, 100):
-            embedding = EmbeddingsRecommenderSystem(dimension)
+            embedding = EmbeddingsARS(dimension)
             embedding._create_user_items_matrix(self.DATA)
             self.assertEqual(embedding._users_count, self.DATA.shape[0])
             self.assertEqual(embedding._items_count, self.DATA.shape[1])
@@ -91,7 +91,7 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_create_information_for_debugging(self):
-        embedding = EmbeddingsRecommenderSystem(self.DIMENSION)
+        embedding = EmbeddingsARS(self.DIMENSION)
         embedding._create_information_for_debugging(self.DATA, None)
         self.assertEqual(embedding._users_indices, None)
         self.assertEqual(embedding._items_indices, None)
@@ -103,7 +103,7 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_private_fit(self):
-        embedding = EmbeddingsRecommenderSystem(self.DIMENSION)
+        embedding = EmbeddingsARS(self.DIMENSION)
         embedding._fit(self.EPOCHS, None)
         embedding.debug_information.update('mse')
         embedding._create_user_items_matrix(self.DATA)
@@ -112,9 +112,9 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_fit(self):
-        embedding = EmbeddingsRecommenderSystem(self.DIMENSION)
-        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsRecommenderSystem)
-        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, 'mse')), EmbeddingsRecommenderSystem)
+        embedding = EmbeddingsARS(self.DIMENSION)
+        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsARS)
+        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, 'mse')), EmbeddingsARS)
         self.assertRaises(TypeError, embedding.fit, '1', self.EPOCHS)
         self.assertRaises(TypeError, embedding.fit, self.DATA, '1')
         self.assertRaises(TypeError, embedding.fit, self.DATA, self.EPOCHS, '1')
@@ -122,12 +122,12 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_refit(self):
-        embedding = EmbeddingsRecommenderSystem(self.DIMENSION)
+        embedding = EmbeddingsARS(self.DIMENSION)
         self.assertRaises(AttributeError, embedding.refit, self.DATA, self.EPOCHS)
-        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsRecommenderSystem)
+        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsARS)
         self.assertListEqual(list(embedding._users_matrix.shape), [self.DATA.shape[0], self.DIMENSION])
         self.assertListEqual(list(embedding._items_matrix.shape), [self.DATA.shape[1], self.DIMENSION])
-        self.assertEqual(type(embedding.refit(self.NEW_DATA, self.EPOCHS, None)), EmbeddingsRecommenderSystem)
+        self.assertEqual(type(embedding.refit(self.NEW_DATA, self.EPOCHS, None)), EmbeddingsARS)
         self.assertListEqual(list(embedding._users_matrix.shape), [self.NEW_DATA.shape[0], self.DIMENSION])
         self.assertListEqual(list(embedding._items_matrix.shape), [self.NEW_DATA.shape[1], self.DIMENSION])
         self.assertRaises(TypeError, embedding.refit, '1', self.EPOCHS)
@@ -137,9 +137,9 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_predict_ratings(self):
-        embedding = EmbeddingsRecommenderSystem(self.DIMENSION)
+        embedding = EmbeddingsARS(self.DIMENSION)
         self.assertRaises(AttributeError, embedding.predict_ratings, self.USER_INDEX)
-        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsRecommenderSystem)
+        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsARS)
         self.assertListEqual(list(embedding.predict_ratings(self.USER_INDEX).shape), [self.DATA.shape[1]])
         self.assertRaises(TypeError, embedding.predict_ratings, '1')
         self.assertRaises(ValueError, embedding.predict_ratings, -1)
@@ -147,9 +147,9 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_predict(self):
-        embedding = EmbeddingsRecommenderSystem(self.DIMENSION)
+        embedding = EmbeddingsARS(self.DIMENSION)
         self.assertRaises(AttributeError, embedding.predict, self.USER_INDEX, self.ITEMS_COUNT)
-        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsRecommenderSystem)
+        self.assertEqual(type(embedding.fit(self.DATA, self.EPOCHS, None)), EmbeddingsARS)
         self.assertListEqual(list(embedding.predict(self.USER_INDEX, self.ITEMS_COUNT).shape), [self.ITEMS_COUNT])
         self.assertRaises(TypeError, embedding.predict, '1', self.ITEMS_COUNT)
         self.assertRaises(ValueError, embedding.predict, -1, self.ITEMS_COUNT)
@@ -160,5 +160,5 @@ class TestEmbeddingsRecommenderSystem(unittest.TestCase):
 
     @mock.patch('recommender_system_library.models.abstract.EmbeddingsRecommenderSystem.__abstractmethods__', set())
     def test_str(self) -> None:
-        embedding = EmbeddingsRecommenderSystem(self.DIMENSION)
+        embedding = EmbeddingsARS(self.DIMENSION)
         self.assertIn('embeddings', str(embedding))

@@ -62,7 +62,7 @@ def get_metric_for_recommender_system(user_id: int, system_id: int, metric_name:
 
     # check metric parameter
     if metric_name not in __metrics_functions or predict_param_name not in __predict_parameter_names:
-        raise ValueError
+        raise ValueError('This params not available')
 
     model = get_model(user_id, system_id)  # getting a saved model
 
@@ -70,7 +70,7 @@ def get_metric_for_recommender_system(user_id: int, system_id: int, metric_name:
     if predict_param_name == __predict_parameter_names[0]:
 
         y_predict = [
-            model.predict(user_index, predict_param_value) for user_index in users_list
+            model.predict(user_index)[:predict_param_value] for user_index in users_list
         ]
 
         y_true = [

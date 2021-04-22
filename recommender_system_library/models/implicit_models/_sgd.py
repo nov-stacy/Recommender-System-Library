@@ -1,10 +1,10 @@
 import numpy as np
 from scipy import sparse as sparse
 
-from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsARS
 
 
-class ImplicitStochasticLatentFactorModel(EmbeddingsRecommenderSystem):
+class ImplicitStochasticLatentFactorModel(EmbeddingsARS):
     """
     A model based on the fact that any signals from the user are better than their absence.
 
@@ -62,10 +62,7 @@ class ImplicitStochasticLatentFactorModel(EmbeddingsRecommenderSystem):
         # similarity between user and item
         similarity = self._users_matrix[user_index] @ self._items_matrix[item_index].T
 
-        # get the difference between the true value of the rating and the approximate
-        implicit_user = np.asscalar(self._implicit_users[user_index])
-        implicit_item = np.asscalar(self._implicit_items[item_index])
-        return (indicator - implicit_user - implicit_item - similarity) * (1 + self._influence * rating)
+        return (indicator - similarity) * (1 + self._influence * rating)
 
     def _calculate_users_matrix(self, user_index: int, item_index: int, delta: float) -> None:
         """
@@ -106,10 +103,6 @@ class ImplicitStochasticLatentFactorModel(EmbeddingsRecommenderSystem):
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data: sparse.coo_matrix = data
 
-        # determining the average values of implicit interest for users and items
-        self._implicit_users: np.ndarray = (data != 0).astype(int).mean(axis=1)
-        self._implicit_items: np.ndarray = (data != 0).mean(axis=0).transpose()
-
     def _train_one_epoch(self) -> None:
         # random users
         users_indices = np.arange(self._users_count)
@@ -132,4 +125,6 @@ class ImplicitStochasticLatentFactorModel(EmbeddingsRecommenderSystem):
                 self._calculate_items_matrix(user_index, item_index, delta)
 
     def __str__(self) -> str:
-        return f'iSGD [dimension = {self._dimension}]'
+        return f'ISLFM [dimension = {self._dimension}, lr = {self._rate}, ' \
+               f'user = {self._user_regularization}, ' \
+               f'item = {self._item_regularization}, influence = {self._influence}]'

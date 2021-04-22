@@ -1,6 +1,5 @@
 KEY_AUTHORIZATION = 'Authorization'
 KEY_ID = 'id'
-KEY_ITEMS_COUNT = 'items_count'
 KEY_PARAMS = 'params'
 KEY_PREDICT_PARAMETER_NAME = 'predict_parameter_name'
 KEY_PREDICT_PARAMETER_VALUE = 'predict_parameter_value'

@@ -1,10 +1,10 @@
 import numpy as np
 from scipy import sparse as sparse
 
-from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsARS
 
 
-class ImplicitHierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
+class ImplicitHierarchicalAlternatingLeastSquaresModel(EmbeddingsARS):
     """
     A model based only on the ratings.
 
@@ -41,12 +41,13 @@ class ImplicitHierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSyst
         Matrix of differences between original and calculated data: numpy array
         """
 
-        data = self._implicit_data * self._implicit_data_with_reg
+        data = self._implicit_data.multiply(self._implicit_data_with_reg)
         indices = list(range(index)) + list(range(index + 1, self._dimension))
-        calculated_data = sum((self._users_matrix[:, _index].reshape((self._users_matrix[:, _index].shape[0], 1)) @
-                               self._items_matrix[:, _index].reshape((self._items_matrix[:, _index].shape[0], 1)).T
-                               for _index in indices)) * self._implicit_data_with_reg
-        return data - calculated_data
+        calculated_data = np.sum(self._users_matrix[:, _index].reshape((self._users_matrix[:, _index].shape[0], 1)) @
+                                 self._items_matrix[:, _index].reshape((self._items_matrix[:, _index].shape[0], 1)).T
+                                 for _index in indices)
+        result = self._implicit_data_with_reg.multiply(calculated_data)
+        return data - result
 
     def _calculate_users_matrix(self, index: int, delta: np.array) -> None:
         """
@@ -76,14 +77,14 @@ class ImplicitHierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSyst
         """
 
         denominator = self._users_matrix[:, index].T @ self._users_matrix[:, index]
-        self._users_matrix[:, index] = self._users_matrix[:, index].T @ delta / denominator
+        self._items_matrix[:, index] = delta.T @ self._users_matrix[:, index] / denominator
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         matrix_ones = sparse.coo_matrix(np.ones(data.shape))
 
         # determining the matrices of implicit data
-        self._implicit_data: sparse.coo_matrix = (data != 0).astype(int)
-        self._implicit_data_with_reg: sparse.coo_matrix = self._influence * matrix_ones + self._implicit_data
+        self._implicit_data: sparse.coo_matrix = (data != 0).astype(int).tocoo()
+        self._implicit_data_with_reg: sparse.coo_matrix = (self._influence * matrix_ones + self._implicit_data).tocoo()
 
     def _train_one_epoch(self) -> None:
         for index in range(self._dimension):
@@ -94,4 +95,4 @@ class ImplicitHierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSyst
             self._calculate_items_matrix(index, delta)
 
     def __str__(self) -> str:
-        return f'iHALS [dimension = {self._dimension}]'
+        return f'iHALS [dimension = {self._dimension}, influence = {self._influence}]'

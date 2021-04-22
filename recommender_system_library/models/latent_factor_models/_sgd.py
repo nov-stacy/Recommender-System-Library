@@ -1,10 +1,10 @@
 import numpy as np
 from scipy import sparse
 
-from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsARS
 
 
-class StochasticLatentFactorModel(EmbeddingsRecommenderSystem):
+class StochasticLatentFactorModel(EmbeddingsARS):
     """
     A model based only on the ratings.
 
@@ -58,7 +58,7 @@ class StochasticLatentFactorModel(EmbeddingsRecommenderSystem):
         similarity = self._users_matrix[user_index] @ self._items_matrix[item_index].T
 
         # get the difference between the true value of the rating and the approximate
-        return rating - np.asscalar(self._mean_users[user_index]) - np.asscalar(self._mean_items[item_index]) - similarity
+        return rating - similarity
 
     def _calculate_users_matrix(self, user_index: int, item_index: int, delta: float) -> None:
         """
@@ -104,10 +104,6 @@ class StochasticLatentFactorModel(EmbeddingsRecommenderSystem):
         self._items_indices: np.ndarray = data.col
         self._ratings: np.ndarray = data.data
 
-        # calculating means of users and items ratings
-        self._mean_users: np.ndarray = np.array(data.mean(axis=1))
-        self._mean_items: np.ndarray = np.array(data.mean(axis=0).transpose())
-
     def _train_one_epoch(self) -> None:
         # shuffle all data
         shuffle_indices = np.arange(self._ratings.shape[0])
@@ -124,4 +120,5 @@ class StochasticLatentFactorModel(EmbeddingsRecommenderSystem):
             self._calculate_items_matrix(user_index, item_index, delta)
 
     def __str__(self) -> str:
-        return f'SGD [dimension = {self._dimension}]'
+        return f'SLFM [dimension = {self._dimension}, lr = {self._rate}, ' \
+               f'user = {self._user_regularization}, item = {self._item_regularization}]'

@@ -10,7 +10,7 @@ from recommender_system_library.metrics import mean_square_error, mean_absolute_
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
-__all__ = ['EmbeddingsRecommenderSystem', 'EmbeddingDebug']
+__all__ = ['EmbeddingsARS', 'EmbeddingDebug']
 
 
 class EmbeddingDebug:
@@ -48,8 +48,7 @@ class EmbeddingDebug:
         self._debug_information = [] if debug_name else None
         self._debug_function = self.__debugging_function_values[debug_name] if debug_name else None
 
-    def set(self, users_indices: np.ndarray, items_indices: np.ndarray, ratings: np.ndarray,
-            users_matrix: np.ndarray, items_matrix: np.ndarray) -> None:
+    def set(self, users_indices: np.ndarray, items_indices: np.ndarray, ratings: np.ndarray, users_matrix: np.ndarray, items_matrix: np.ndarray) -> None:
         """
         Calculate functional of error
 
@@ -114,7 +113,7 @@ class EmbeddingDebug:
             return self._debug_information
 
 
-class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
+class EmbeddingsARS(AbstractRecommenderSystem, ABC):
     """
     Abstract class for recommender system that builds recommendations for the user based on the fact that all users and
     items are defined by vectors (categories of interests). For example, each component of such a vector can be
@@ -222,8 +221,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
                 self.debug_information.set(self._users_indices, self._items_indices, self._ratings,
                                            self._users_matrix, self._items_matrix)
 
-    def fit(self, data: sparse.coo_matrix, epochs: int,
-            debug_name: tp.Optional[str] = None) -> 'EmbeddingsRecommenderSystem':
+    def fit(self, data: sparse.coo_matrix, epochs: int, debug_name: tp.Optional[str] = None) -> 'EmbeddingsARS':
         """
         Method for training a model
 
@@ -263,8 +261,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
 
         return self
 
-    def refit(self, data: sparse.coo_matrix,
-              epochs: int = 100, debug_name: tp.Optional[str] = None) -> 'EmbeddingsRecommenderSystem':
+    def refit(self, data: sparse.coo_matrix, epochs: int = 100, debug_name: tp.Optional[str] = None) -> 'EmbeddingsARS':
         """
         Method for retrain model
 
@@ -315,19 +312,6 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         return self
 
     def predict_ratings(self, user_index: int) -> np.ndarray:
-        """
-        Method for getting a predicted ratings for current user
-
-        Parameters
-        ----------
-        user_index: int
-            The index of the user to make the prediction
-
-        Returns
-        -------
-        List of items: numpy array
-        """
-
         self._check_trained_and_rise_error()
 
         if type(user_index) not in [int, np.int64]:
@@ -338,22 +322,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
 
         return self._users_matrix[user_index] @ self._items_matrix.T
 
-    def predict(self, user_index: int, items_count: int) -> np.ndarray:
-        """
-        Method for getting a predicted indices of items to user
-
-        Parameters
-        ----------
-        user_index: int
-            The index of the user to make the prediction
-        items_count: int
-            The count of items to predict
-
-        Returns
-        -------
-        List of indices: numpy array
-        """
-
+    def predict(self, user_index: int) -> np.ndarray:
         self._check_trained_and_rise_error()
 
         if type(user_index) not in [int, np.int64]:
@@ -362,13 +331,7 @@ class EmbeddingsRecommenderSystem(AbstractRecommenderSystem, ABC):
         if user_index < 0:
             raise ValueError('Index should be not negative')
 
-        if type(items_count) not in [int, np.int64]:
-            raise TypeError('Count of items should have integer type')
-
-        if items_count <= 0:
-            raise ValueError('Count of items should be positive')
-
-        return self.predict_ratings(user_index).argsort()[::-1][:items_count]
+        return self.predict_ratings(user_index).argsort()[::-1]
 
     @abstractmethod
     def __str__(self) -> str:

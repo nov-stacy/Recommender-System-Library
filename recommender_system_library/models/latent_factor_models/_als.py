@@ -2,10 +2,10 @@ import numpy as np
 from scipy import sparse as sparse
 import scipy.linalg as sla
 
-from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsARS
 
 
-class AlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
+class AlternatingLeastSquaresModel(EmbeddingsARS):
     """
     A model based only on the ratings.
 

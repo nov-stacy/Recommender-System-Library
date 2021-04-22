@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.sparse as sparse
 from scipy.sparse.linalg import svds
-from recommender_system_library.models.abstract import AbstractRecommenderSystemTrainWithOneEpoch
+from recommender_system_library.models.abstract import TrainWithOneEpochARS
 
 
-class SingularValueDecompositionModel(AbstractRecommenderSystemTrainWithOneEpoch):
+class SingularValueDecompositionModel(TrainWithOneEpochARS):
     """
     Recommender system based on singular value decomposition.
 

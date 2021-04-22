@@ -3,10 +3,10 @@ from scipy import sparse as sparse
 from scipy.stats import pearsonr
 from sklearn.neighbors import NearestNeighbors
 
-from recommender_system_library.models.abstract import AbstractRecommenderSystemTrainWithOneEpoch
+from recommender_system_library.models.abstract import TrainWithOneEpochARS
 
 
-class UserBasedModel(AbstractRecommenderSystemTrainWithOneEpoch):
+class UserBasedModel(TrainWithOneEpochARS):
     """
     Recommender system based on distance between users and what neighbors like
 
@@ -73,4 +73,4 @@ class UserBasedModel(AbstractRecommenderSystemTrainWithOneEpoch):
         return np.squeeze(np.asarray(self._mean_items + numerator.transpose() / denominator))
 
     def __str__(self) -> str:
-        return f'User based [k_nearest_neighbours = {self._k_nearest_neighbours}]'
+        return f'UBM [k_nearest_neighbours = {self._k_nearest_neighbours}]'

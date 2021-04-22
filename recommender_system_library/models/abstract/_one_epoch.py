@@ -6,7 +6,7 @@ from scipy import sparse
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
-class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC):
+class TrainWithOneEpochARS(AbstractRecommenderSystem, ABC):
     """
     Abstract class for recommender system which are trained with the help of a single epoch and
     don`t have the possibility of retraining
@@ -28,7 +28,7 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
         Current instance of class : RecommenderSystem
         """
 
-    def fit(self, data: sparse.coo_matrix) -> 'AbstractRecommenderSystemTrainWithOneEpoch':
+    def fit(self, data: sparse.coo_matrix) -> 'TrainWithOneEpochARS':
         """
         Method for training a model
 
@@ -51,7 +51,7 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
 
         return self
 
-    def refit(self, data: sparse.coo_matrix) -> 'AbstractRecommenderSystemTrainWithOneEpoch':
+    def refit(self, data: sparse.coo_matrix) -> 'TrainWithOneEpochARS':
         """
         Method for retrain model
 
@@ -89,19 +89,6 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
         """
 
     def predict_ratings(self, user_index: int) -> np.ndarray:
-        """
-        Method for getting a predicted ratings for current user
-
-        Parameters
-        ----------
-        user_index: int
-            The index of the user to make the prediction
-
-        Returns
-        -------
-        List of items: numpy array
-        """
-
         self._check_trained_and_rise_error()
 
         if type(user_index) not in [int, np.int64]:
@@ -112,7 +99,7 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
 
         return self._predict_ratings(user_index)
 
-    def _predict(self, user_index: int, items_count: int):
+    def _predict(self, user_index: int):
         """
         Method for getting a predicted indices of items to user
 
@@ -120,31 +107,14 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
         ----------
         user_index: int
             The index of the user to make the prediction
-        items_count: int
-            The count of items to predict
 
         Returns
         -------
         list of indices: numpy array
         """
-        return self.predict_ratings(user_index).argsort()[::-1][:items_count]
+        return self.predict_ratings(user_index).argsort()[::-1]
 
-    def predict(self, user_index: int, items_count: int) -> np.ndarray:
-        """
-        Method for getting a predicted indices of items to user
-
-        Parameters
-        ----------
-        user_index: int
-            The index of the user to make the prediction
-        items_count: int
-            The count of items to predict
-
-        Returns
-        -------
-        list of indices: numpy array
-        """
-
+    def predict(self, user_index: int) -> np.ndarray:
         self._check_trained_and_rise_error()
 
         if type(user_index) not in [int, np.int64]:
@@ -153,13 +123,7 @@ class AbstractRecommenderSystemTrainWithOneEpoch(AbstractRecommenderSystem, ABC)
         if user_index < 0:
             raise ValueError('Index should be positive and less than count of users')
 
-        if type(items_count) not in [int, np.int64]:
-            raise TypeError('Count of items should have integer type')
-
-        if items_count <= 0:
-            raise ValueError('Count of items should be positive')
-
-        return self._predict(user_index, items_count)
+        return self._predict(user_index)
 
     @abstractmethod
     def __str__(self) -> str:

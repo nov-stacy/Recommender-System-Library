@@ -1,10 +1,10 @@
 import numpy as np
 from scipy import sparse as sparse
 
-from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsARS
 
 
-class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
+class HierarchicalAlternatingLeastSquaresModel(EmbeddingsARS):
     """
     A model based only on the ratings.
 
@@ -40,9 +40,9 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         """
 
         indices = list(range(index)) + list(range(index + 1, self._dimension))
-        calculated_data = sum((self._users_matrix[:, _index].reshape((self._users_matrix[:, _index].shape[0], 1)) @
-                               self._items_matrix[:, _index].reshape((self._items_matrix[:, _index].shape[0], 1)).T
-                               for _index in indices))
+        calculated_data = np.sum(self._users_matrix[:, _index].reshape((self._users_matrix[:, _index].shape[0], 1)) @
+                                 self._items_matrix[:, _index].reshape((self._items_matrix[:, _index].shape[0], 1)).T
+                                 for _index in indices)
         return self._data - calculated_data
 
     def _calculate_users_matrix(self, index: int, delta: np.array) -> None:
@@ -73,7 +73,7 @@ class HierarchicalAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         """
 
         denominator = self._users_matrix[:, index].T @ self._users_matrix[:, index]
-        self._users_matrix[:, index] = self._users_matrix[:, index].T @ delta / denominator
+        self._items_matrix[:, index] = delta.T @ self._users_matrix[:, index] / denominator
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data

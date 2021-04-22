@@ -52,15 +52,25 @@ class AbstractRecommenderSystem(ABC):
         """
         Method for getting a predicted ratings for current user
 
+        Parameters
+        ----------
+        user_index: int
+            The index of the user to make the prediction
+
         Returns
         -------
         List of items: numpy array
         """
 
     @abstractmethod
-    def predict(self, user_index: int, items_count: int) -> np.ndarray:
+    def predict(self, user_index: int) -> np.ndarray:
         """
         Method for getting a predicted indices of items to user
+
+        Parameters
+        ----------
+        user_index: int
+            The index of the user to make the prediction
 
         Returns
         -------

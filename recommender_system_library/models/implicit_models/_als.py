@@ -2,10 +2,10 @@ import numpy as np
 from scipy import sparse as sparse
 import scipy.linalg as sla
 
-from recommender_system_library.models.abstract import EmbeddingsRecommenderSystem
+from recommender_system_library.models.abstract import EmbeddingsARS
 
 
-class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
+class ImplicitAlternatingLeastSquaresModel(EmbeddingsARS):
 
     def __init__(self, dimension: int, influence_regularization: float = 0) -> None:
         """
@@ -38,11 +38,12 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         """
 
         for index in range(self._items_matrix.shape[0]):
-            quotient_matrix = (self._implicit_data_with_reg.getrow(index).toarray() * self._items_matrix.T).dot(self._users_matrix)
+            ith_col = self._implicit_data_with_reg.getcol(index).toarray().T
+            quotient_matrix = (ith_col * self._users_matrix.T).dot(self._users_matrix)
             try:
-                self._items_matrix[index, :] = sla.solve(quotient_matrix, self._users_matrix.T.dot(self._implicit_data_with_reg.getcol(index).toarray() * self._implicit_data.getcol(index).toarray())).flatten()
+                self._items_matrix[index, :] = sla.solve(quotient_matrix, self._users_matrix.T.dot(ith_col.T * self._implicit_data.getcol(index).toarray())).flatten()
             except (np.linalg.LinAlgError, sla.LinAlgError):
-                self._items_matrix[index, :] = quotient_matrix.dot(self._users_matrix.T.dot(self._implicit_data_with_reg.getcol(index).toarray() * self._implicit_data.getcol(index).toarray())).flatten()
+                self._items_matrix[index, :] = quotient_matrix.dot(self._users_matrix.T.dot(ith_col.T * self._implicit_data.getcol(index).toarray())).flatten()
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data
@@ -56,5 +57,5 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsRecommenderSystem):
         self._calculate_items_matrix()
 
     def __str__(self) -> str:
-        return f'iALS [dimension = {self._dimension}]'
+        return f'iALS [dimension = {self._dimension}, influence = {self._influence}]'
 

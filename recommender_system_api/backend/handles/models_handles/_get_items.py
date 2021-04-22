@@ -33,11 +33,10 @@ def get_list_of_items_from_recommender_system(user_id: int, system_id: int,
 
     check_dictionary_with_str_keys(data)  # check params
 
-    # getting the user's index and the number of items
-    user_index, items_count = split_data(data, [KEY_USER, KEY_ITEMS_COUNT])
+    # getting the user's index
+    user_index = split_data(data, [KEY_USER])[0]
     check_format_of_integer(user_index)
-    check_format_of_positive_integer(items_count)
 
     model = get_model(user_id, system_id)  # getting a saved model
 
-    return {KEY_RESULT: [int(item_index) for item_index in model.predict(user_index, items_count)]}
+    return {KEY_RESULT: [int(item_index) for item_index in model.predict(user_index)]}

@@ -15,7 +15,7 @@ from scipy import sparse
 def split_data(data: tp.Dict[str, tp.Any], parameters: tp.List[str]) -> tp.List[tp.Any]:
 
     if set(data.keys()) != set(parameters):
-        raise ValueError
+        raise ValueError('No needed parameters')
     return [data[parameter] for parameter in parameters]
 
 
