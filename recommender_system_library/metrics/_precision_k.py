@@ -16,13 +16,6 @@ def _one_user_precision(true_indices: np.ndarray, predicted_indices: np.ndarray)
     predicted_indices: numpy array
         Item indices that were recommended to the user
 
-    Raises
-    ------
-    TypeError
-        If parameters don't have needed format
-    ValueError
-        If arrays don't store int non-negative values
-
     Returns
     -------
     Precision@k for user: float
@@ -59,13 +52,6 @@ def precision_k(true_indices: tp.List[np.ndarray], predicted_indices: tp.List[np
         Indices of items, about which it is known that they was liked by the users
     predicted_indices: array of numpy arrays
         Item indices that were recommended to the users
-
-    Raises
-    ------
-    TypeError
-        If parameters don't have needed format
-    ValueError
-        If two arrays don't have same shape
 
     Returns
     -------

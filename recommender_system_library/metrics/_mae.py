@@ -15,16 +15,9 @@ def _one_mean_absolute_error(true_ratings: np.ndarray, predicted_ratings: np.nda
     predicted_ratings: numpy array
         Item ratings that were recommended to the user
 
-    Raises
-    ------
-    TypeError
-        If parameters don't have needed format
-    ValueError
-        If arrays don't store int non-negative values
-
     Returns
     -------
-    Precision@k for user: float
+    MAE for user: float
     """
 
     if type(true_ratings) != np.ndarray or type(predicted_ratings) != np.ndarray:
@@ -51,16 +44,9 @@ def mean_absolute_error(true_ratings: tp.List[np.ndarray], predicted_ratings: tp
     predicted_ratings: array of numpy arrays
         item ratings that were recommended to the users
 
-    Raises
-    ------
-    TypeError
-        If parameters don't have needed format
-    ValueError
-        If two arrays don't have same shape
-
     Returns
     -------
-    Mean of Precision@k for all users: float
+    Mean of MAE for all users: float
     """
 
     def one_mean_absolute_error(index) -> float:

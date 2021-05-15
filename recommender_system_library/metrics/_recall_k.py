@@ -16,13 +16,6 @@ def _one_user_recall(true_indices: np.ndarray, predicted_indices: np.ndarray) ->
     predicted_indices: numpy array
         Item indices that were recommended to the user
 
-    Raises
-    ------
-    TypeError
-        If parameters don't have needed format
-    ValueError
-        If arrays don't store non-negative values
-
     Returns
     -------
     Recall@k for user: float
@@ -58,14 +51,7 @@ def recall_k(true_indices: tp.List[np.ndarray], predicted_indices: tp.List[np.nd
     true_indices: array of numpy arrays
         Indices of items, about which it is known that they was liked by the users
     predicted_indices: array of numpy arrays
-        Item indices that were recommended to the users
-
-    Raises
-    ------
-    TypeError
-        If parameters don't have needed format
-    ValueError
-        If two arrays don't have same shape
+        Item indices that were recommended to the userse
 
     Returns
     -------
