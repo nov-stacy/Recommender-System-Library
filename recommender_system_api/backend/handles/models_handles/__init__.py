@@ -4,6 +4,5 @@ from ._clear_system import *
 from ._create_system import *
 from ._delete_system import *
 from ._get_items import *
-from ._get_metrics import *
 from ._get_ratings import *
 from ._train_system import *

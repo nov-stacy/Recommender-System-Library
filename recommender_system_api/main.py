@@ -35,11 +35,6 @@ def method_for_exception_catch(good_status_code):
     return decorator
 
 
-@app.route('/', methods=['GET'])
-def main() -> flask.Response:
-    return flask.render_template('main.html')
-
-
 @app.route('/registration', methods=['POST'])
 @method_for_exception_catch(201)
 def registration_user() -> tp.Dict[str, tp.Any]:
@@ -100,13 +95,6 @@ def get_predicted_ratings(system_id: int) -> tp.Dict[str, tp.Any]:
 def get_predicted_items(system_id: int) -> tp.Dict[str, tp.Any]:
     user_id = backend.check_user_token(flask.request.headers)
     return backend.get_list_of_items_from_recommender_system(user_id, int(system_id), flask.request.json)
-
-
-@app.route('/metric/<metric_name>/<system_id>', methods=['GET'])
-@method_for_exception_catch(200)
-def get_metric_for_system(metric_name: str, system_id: int) -> tp.Dict[str, tp.Any]:
-    user_id = backend.check_user_token(flask.request.headers)
-    return backend.get_metric_for_recommender_system(user_id, int(system_id), metric_name, flask.request.json)
 
 
 if __name__ == '__main__':

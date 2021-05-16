@@ -34,7 +34,7 @@ def train_recommender_system(user_id: int, system_id: int, data: tp.Dict[str, tp
     check_format_of_str(train_matrix_str)
     check_dictionary_with_str_keys(parameters)
 
-    model = get_model(user_id, system_id)  # getting a saved model
+    model = get_model(user_id, system_id, is_train=True)  # getting a saved model
 
     train_matrix = get_data(train_matrix_str)
 

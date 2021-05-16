@@ -97,7 +97,7 @@ class TrainWithOneEpochARS(AbstractRecommenderSystem, ABC):
         if user_index < 0:
             raise ValueError('Index should be not negative')
 
-        return self._predict_ratings(user_index)
+        return np.nan_to_num(self._predict_ratings(user_index))
 
     def _predict(self, user_index: int):
         """

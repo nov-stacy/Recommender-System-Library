@@ -10,107 +10,7 @@ from recommender_system_library.metrics import mean_square_error, mean_absolute_
 from recommender_system_library.models.abstract import AbstractRecommenderSystem
 
 
-__all__ = ['EmbeddingsARS', 'EmbeddingDebug']
-
-
-class EmbeddingDebug:
-    """
-    A class for determining the behavior if it is necessary to remember the error change on each epoch
-    """
-
-    __debugging_function_values = {
-        'mse': mean_square_error,
-        'mae': mean_absolute_error,
-        'rmse': root_mean_square_error
-    }
-
-    def __init__(self) -> None:
-        self._debug_information: tp.Optional[tp.List[float]] = None  # array with errors on each epoch
-
-        self._debug_function = None  # error function
-
-    def update(self, debug_name: tp.Optional[str]) -> None:
-        """
-        Checking whether the debugger will be enabled
-
-        Parameters
-        ----------
-        debug_name: str or None
-            Name of the debugging function (mse, mae, rmse)
-        """
-
-        if debug_name is not None and type(debug_name) != str:
-            raise TypeError('Debug name should have string type')
-
-        if debug_name is not None and debug_name not in self.__debugging_function_values:
-            raise ValueError(f'Debug should be in [{", ".join(self.__debugging_function_values.keys())}]')
-
-        self._debug_information = [] if debug_name else None
-        self._debug_function = self.__debugging_function_values[debug_name] if debug_name else None
-
-    def set(self, users_indices: np.ndarray, items_indices: np.ndarray, ratings: np.ndarray, users_matrix: np.ndarray, items_matrix: np.ndarray) -> None:
-        """
-        Calculate functional of error
-
-        Parameters
-        ----------
-        users_indices: numpy array
-            Array for indices with not null ratings
-        items_indices: numpy array
-            Array for indices with not null ratings
-        ratings: numpy array
-            Array with not null ratings
-        users_matrix: numpy array
-            Matrix of users with latent features
-        items_matrix: numpy array
-            Matrix of items with latent features
-        """
-
-        if self._debug_function is None:
-            return
-
-        if not(type(users_indices) == type(items_indices) == type(ratings) == type(users_matrix) ==
-               type(items_matrix) == np.ndarray):
-            raise TypeError('All data should be numpy array type')
-
-        data_shapes = [users_indices.shape, items_indices.shape, ratings.shape]
-        matrix_shapes = [users_matrix.shape, items_matrix.shape]
-
-        if not(len(data_shapes[0]) == len(data_shapes[1]) == len(data_shapes[2]) == 1):
-            raise ValueError('Arrays should be 1D')
-
-        if not(data_shapes[0] == data_shapes[1] == data_shapes[2]):
-            raise ValueError('users_indices, items_indices and ratings should have same sizes')
-
-        if not(len(matrix_shapes[0]) == len(matrix_shapes[1]) == 2):
-            raise ValueError('Matrices should be 2D')
-
-        if not(matrix_shapes[0][1] == matrix_shapes[1][1]):
-            raise ValueError('users_matrix and items_matrix should have same dimension')
-
-        true_ratings = list()
-        predicted_ratings = list()
-
-        # for each user and item for which the ratings are known
-        for user_index, item_index, rating in zip(users_indices, items_indices, ratings):
-            true_ratings.append(rating)
-            predicted_ratings.append(users_matrix[user_index] @ items_matrix[item_index].T)
-
-        self._debug_information.append(self._debug_function([np.array(true_ratings)], [np.array(predicted_ratings)]))
-
-    def get(self) -> tp.List[float]:
-        """
-        Method for getting a list of functionality errors that were optimized during training
-
-        Returns
-        -------
-        list of functionality errors: list[float]
-        """
-
-        if self._debug_information is None:
-            raise AttributeError("No debug information because there was is_debug = False during training")
-        else:
-            return self._debug_information
+__all__ = ['EmbeddingsARS']
 
 
 class EmbeddingsARS(AbstractRecommenderSystem, ABC):
@@ -121,6 +21,106 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
     the degree of interest of a given user in this category.
     Such vectors are representations that allow you to reduce entities into a single vector space.
     """
+
+    class __EmbeddingDebug:
+        """
+        A class for determining the behavior if it is necessary to remember the error change on each epoch
+        """
+
+        __debugging_function_values = {
+            'mse': mean_square_error,
+            'mae': mean_absolute_error,
+            'rmse': root_mean_square_error
+        }
+
+        def __init__(self) -> None:
+            self.__debug_information: tp.Optional[tp.List[float]] = None  # array with errors on each epoch
+            self.__debug_function = None  # error function
+
+        def _update(self, debug_name: tp.Optional[str]) -> None:
+            """
+            Checking whether the debugger will be enabled
+
+            Parameters
+            ----------
+            debug_name: str or None
+                Name of the debugging function (mse, mae, rmse)
+            """
+
+            if debug_name is not None and type(debug_name) != str:
+                raise TypeError('Debug name should have string type')
+
+            if debug_name is not None and debug_name not in self.__debugging_function_values:
+                raise ValueError(f'Debug should be in [{", ".join(self.__debugging_function_values.keys())}]')
+
+            self.__debug_information = [] if debug_name else None
+            self.__debug_function = self.__debugging_function_values[debug_name] if debug_name else None
+
+        def _set(self, users_indices: np.ndarray, items_indices: np.ndarray, ratings: np.ndarray,
+                  users_matrix: np.ndarray, items_matrix: np.ndarray) -> None:
+            """
+            Calculate functional of error
+
+            Parameters
+            ----------
+            users_indices: numpy array
+                Array for indices with not null ratings
+            items_indices: numpy array
+                Array for indices with not null ratings
+            ratings: numpy array
+                Array with not null ratings
+            users_matrix: numpy array
+                Matrix of users with latent features
+            items_matrix: numpy array
+                Matrix of items with latent features
+            """
+
+            if self.__debug_function is None:
+                return
+
+            if not (type(users_indices) == type(items_indices) == type(ratings) == type(users_matrix) ==
+                    type(items_matrix) == np.ndarray):
+                raise TypeError('All data should be numpy array type')
+
+            data_shapes = [users_indices.shape, items_indices.shape, ratings.shape]
+            matrix_shapes = [users_matrix.shape, items_matrix.shape]
+
+            if not (len(data_shapes[0]) == len(data_shapes[1]) == len(data_shapes[2]) == 1):
+                raise ValueError('Arrays should be 1D')
+
+            if not (data_shapes[0] == data_shapes[1] == data_shapes[2]):
+                raise ValueError('users_indices, items_indices and ratings should have same sizes')
+
+            if not (len(matrix_shapes[0]) == len(matrix_shapes[1]) == 2):
+                raise ValueError('Matrices should be 2D')
+
+            if not (matrix_shapes[0][1] == matrix_shapes[1][1]):
+                raise ValueError('users_matrix and items_matrix should have same dimension')
+
+            true_ratings = list()
+            predicted_ratings = list()
+
+            # for each user and item for which the ratings are known
+            for user_index, item_index, rating in zip(users_indices, items_indices, ratings):
+                true_ratings.append(rating)
+                predicted_ratings.append(users_matrix[user_index] @ items_matrix[item_index].T)
+
+            self.__debug_information.append(
+                self.__debug_function([np.array(true_ratings)], [np.array(predicted_ratings)]))
+
+        def get(self) -> tp.List[float]:
+            """
+            Method for getting a list of functionality errors that were optimized during training
+
+            Returns
+            -------
+            list of functionality errors: list[float]
+            """
+
+            if self.__debug_information is None:
+                raise AttributeError("No debug information because there was is_debug = False during training")
+            else:
+                return self.__debug_information
 
     def __init__(self, dimension: int) -> None:
         """
@@ -141,7 +141,7 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         self._users_matrix: np.ndarray = np.array([])  # matrix of users with latent features
         self._items_matrix: np.ndarray = np.array([])  # matrix of items with latent features
 
-        self.debug_information = EmbeddingDebug()
+        self.debug_information = self.__EmbeddingDebug()
 
     def _create_user_items_matrix(self, data: sparse.coo_matrix) -> None:
         """
@@ -218,8 +218,8 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         for _ in tqdm(range(epochs)):
             self._train_one_epoch()
             if debug_name:
-                self.debug_information.set(self._users_indices, self._items_indices, self._ratings,
-                                           self._users_matrix, self._items_matrix)
+                self.debug_information._set(self._users_indices, self._items_indices, self._ratings,
+                                            self._users_matrix, self._items_matrix)
 
     def fit(self, data: sparse.coo_matrix, epochs: int, debug_name: tp.Optional[str] = None) -> 'EmbeddingsARS':
         """
@@ -252,7 +252,7 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         if debug_name is not None and type(debug_name) != str:
             raise TypeError('Debug name should have string type')
 
-        self.debug_information.update(debug_name)
+        self.debug_information._update(debug_name)
         self._create_user_items_matrix(data)
         self._create_information_for_debugging(data, debug_name)
         self._before_fit(data)
@@ -304,7 +304,7 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
             matrix_part = np.random.randn(data.shape[1] - self._items_count, self._dimension)
             self._items_matrix = np.vstack((self._items_matrix, matrix_part))
 
-        self.debug_information.update(debug_name)
+        self.debug_information._update(debug_name)
         self._create_information_for_debugging(data, debug_name)
         self._before_fit(data)
         self._fit(epochs, debug_name)
@@ -320,7 +320,7 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         if user_index < 0:
             raise ValueError('Index should be not negative')
 
-        return self._users_matrix[user_index] @ self._items_matrix.T
+        return np.nan_to_num(self._users_matrix[user_index] @ self._items_matrix.T)
 
     def predict(self, user_index: int) -> np.ndarray:
         self._check_trained_and_rise_error()

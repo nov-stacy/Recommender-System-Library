@@ -14,8 +14,8 @@ class StochasticLatentFactorModel(EmbeddingsARS):
     and goes through them.
     """
 
-    def __init__(self, dimension: int, learning_rate: float, user_regularization: float = 0,
-                 item_regularization: float = 0) -> None:
+    def __init__(self, dimension: int, learning_rate: float, user_regularization: float = 0.0,
+                 item_regularization: float = 0.0) -> None:
         """
         Parameters
         ----------
@@ -30,6 +30,24 @@ class StochasticLatentFactorModel(EmbeddingsARS):
         """
 
         super().__init__(dimension)
+
+        if type(learning_rate) not in [float, np.float64]:
+            raise TypeError('Learning rate should have float type')
+
+        if learning_rate < 0:
+            raise ValueError('Learning rate should be not lower than zero')
+
+        if type(user_regularization) not in [float, np.float64]:
+            raise TypeError('User_regularization should have float type')
+
+        if user_regularization < 0:
+            raise ValueError('User_regularization should be not lower than zero')
+
+        if type(item_regularization) not in [float, np.float64]:
+            raise TypeError('User_regularization should have float type')
+
+        if item_regularization < 0:
+            raise ValueError('User_regularization should be not lower than zero')
 
         self._rate: float = learning_rate
         self._user_regularization: float = user_regularization

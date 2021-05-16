@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from recommender_system_library.extra_functions.work_with_predict_data import calculate_predicted_items
+from recommender_system_library.extra_functions.work_with_ratings import calculate_predicted_items
 
 
 class TestCalculateIssueRankedList(unittest.TestCase):

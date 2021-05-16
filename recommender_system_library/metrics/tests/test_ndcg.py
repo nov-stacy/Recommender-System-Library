@@ -2,10 +2,10 @@ import unittest
 
 import numpy as np
 
-from recommender_system_library.metrics import normalized_discounted_commulative_gain as ndcg
+from recommender_system_library.metrics import normalized_discounted_cumulative_gain as ndcg
 
 
-class TestNormalizedDiscountedCommulativeGain(unittest.TestCase):
+class TestNormalizedDiscountedcumulativeGain(unittest.TestCase):
 
     TRUE_RATINGS = [np.array([0.1, 0.2, 0.3]), np.array([0.1, 0.3, 0.2]), np.array([0.2, 0.1, 0.3]),
                     np.array([0.2, 0.3, 0.1]), np.array([0.3, 0.1, 0.2]), np.array([0.3, 0.2, 0.1])]

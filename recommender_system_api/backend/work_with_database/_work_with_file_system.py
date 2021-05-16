@@ -56,7 +56,8 @@ def delete_model_folder(system_id: int) -> None:
 
 
 def delete_second_model(system_id: int) -> None:
-    os.remove(get_path_to_second_model(system_id))
+    if check_path_exist(get_path_to_second_model(system_id)):
+        os.remove(get_path_to_second_model(system_id))
 
 
 def save_model_to_file(system_id: int, model: AbstractRecommenderSystem, is_second=False) -> None:

@@ -1,10 +1,10 @@
 import typing as tp
 import numpy as np
 
-__all__ = ['normalized_discounted_commulative_gain']
+__all__ = ['normalized_discounted_cumulative_gain']
 
 
-def _normalized_discounted_commulative_gain(true_ratings: np.ndarray, predicted_ratings: np.ndarray) -> float:
+def _normalized_discounted_cumulative_gain(true_ratings: np.ndarray, predicted_ratings: np.ndarray) -> float:
     """
     Method to calculate NDCG for one user
 
@@ -39,7 +39,7 @@ def _normalized_discounted_commulative_gain(true_ratings: np.ndarray, predicted_
     return dcg / idcg
 
 
-def normalized_discounted_commulative_gain(true_ratings: tp.List[np.ndarray], predicted_ratings: tp.List[np.ndarray]) -> float:
+def normalized_discounted_cumulative_gain(true_ratings: tp.List[np.ndarray], predicted_ratings: tp.List[np.ndarray]) -> float:
     """
     Method to calculate NDCG for all users
 
@@ -55,8 +55,8 @@ def normalized_discounted_commulative_gain(true_ratings: tp.List[np.ndarray], pr
     Mean of NDCG for all users: float
     """
 
-    def one_normalized_discounted_commulative_gain(index) -> float:
-        return _normalized_discounted_commulative_gain(true_ratings[index], predicted_ratings[index])
+    def one_normalized_discounted_cumulative_gain(index) -> float:
+        return _normalized_discounted_cumulative_gain(true_ratings[index], predicted_ratings[index])
 
     if type(true_ratings) != list or type(predicted_ratings) != list:
         raise TypeError('Input values need to have list format')
@@ -65,4 +65,4 @@ def normalized_discounted_commulative_gain(true_ratings: tp.List[np.ndarray], pr
         raise ValueError('Two arrays should have same shape')
 
     ratings = np.arange(len(true_ratings))
-    return np.vectorize(one_normalized_discounted_commulative_gain)(ratings).mean()
+    return np.vectorize(one_normalized_discounted_cumulative_gain)(ratings).mean()

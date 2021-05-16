@@ -21,8 +21,8 @@ __all__ = [
     'check_status_of_system'
 ]
 
-ERROR_STATUS = 'ERROR'
-NOT_TRAIN_STATUS = 'NOT TRAINING'
+ERROR_STATUS = 'ERROR DURING THE TRAINING'
+NOT_TRAIN_STATUS = 'READY'
 TRAIN_STATUS = 'TRAINING'
 
 
@@ -38,6 +38,9 @@ def _async_raise(tid, exc_type):
 
 
 class TrainThread(threading.Thread):
+    """
+
+    """
 
     def __init__(self, user_id: int, system_id: int, model: AbstractRecommenderSystem, data: sparse.coo_matrix,
                  train_parameters: tp.Dict[str, tp.Any]) -> None:

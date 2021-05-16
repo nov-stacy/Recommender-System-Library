@@ -24,7 +24,7 @@ def f1_measure(true_indices: tp.List[np.ndarray], predicted_indices: tp.List[np.
     Mean of F1 for all users: float
     """
 
-    def one_user_recall(index) -> float:
+    def one_user_f1(index) -> float:
         precision = _one_user_precision(true_indices[index], predicted_indices[index])
         recall = _one_user_recall(true_indices[index], predicted_indices[index])
         if precision + recall == 0:
@@ -38,4 +38,4 @@ def f1_measure(true_indices: tp.List[np.ndarray], predicted_indices: tp.List[np.
         raise ValueError('Two arrays should have same shape')
 
     indices = np.arange(len(true_indices))
-    return np.vectorize(one_user_recall)(indices).mean()
+    return np.vectorize(one_user_f1)(indices).mean()

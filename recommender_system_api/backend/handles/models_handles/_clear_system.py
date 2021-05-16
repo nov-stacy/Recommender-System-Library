@@ -1,7 +1,6 @@
 from recommender_system_api.backend.checkers import *
 from recommender_system_api.backend.handles._settings import *
 from recommender_system_api.backend.work_with_models import *
-from recommender_system_library.extra_functions.work_with_models import create_model
 
 
 __all__ = ['clear_recommender_system']

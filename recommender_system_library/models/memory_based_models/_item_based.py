@@ -28,7 +28,7 @@ class ItemBasedModel(TrainWithOneEpochARS):
     def _correlation(first, second):
         return 1 - pearsonr(first.toarray()[0], second.toarray()[0])[0]
 
-    def __init__(self, k_nearest_neighbours: int, barrier_type: str) -> None:
+    def __init__(self, k_nearest_neighbours: int, barrier_type: str = 'mean') -> None:
         """
         Parameters
         ----------

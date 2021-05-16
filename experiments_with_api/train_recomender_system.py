@@ -5,7 +5,7 @@ import typing as tp
 
 import requests
 
-from recommender_system_library.extra_functions.work_with_train_data import read_matrix_from_file, get_train_matrix
+from recommender_system_library.extra_functions.work_with_matrices import read_matrix_from_file, get_train_matrix
 
 URL = 'http://127.0.0.1:5000/train/'
 PATH_TO_DATA = '../data_train/matrices/random_matrix_10.npz'
