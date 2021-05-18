@@ -296,6 +296,9 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         if type(epochs) not in [int, np.int64]:
             raise TypeError('Number of epochs should have integer')
 
+        if type(verbose) != bool:
+            raise TypeError('Verbose should have boolean type')
+
         if epochs <= 0:
             raise ValueError('Number of epochs should be positive')
 
