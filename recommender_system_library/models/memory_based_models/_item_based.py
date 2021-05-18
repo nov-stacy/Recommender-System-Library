@@ -98,5 +98,5 @@ class ItemBasedModel(TrainWithOneEpochARS):
         return np.array(list(zip(*sorted_items))[0])
 
     def __str__(self) -> str:
-        return f'Item based [k_nearest_neighbours = {self._k_nearest_neighbours},' \
+        return f'IBM [k_nearest_neighbours = {self._k_nearest_neighbours},' \
                f'barrier_type = {self._barrier_type}]'

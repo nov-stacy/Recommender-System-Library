@@ -13,7 +13,6 @@ class TestUserBasedModel(unittest.TestCase):
     NEW_DATA = sparse.coo_matrix([[1, 2, 3], [1, 2, 2], [0, 1, 3]])
     K_NEAREST_NEIGHBOURS = 1
     USER_INDEX = 0
-    ITEMS_COUNT = 2
 
     def test_create(self):
         for k_nearest_neighbours in range(1, 100):
@@ -54,10 +53,9 @@ class TestUserBasedModel(unittest.TestCase):
     def test_predict(self):
         model = UserBasedModel(self.K_NEAREST_NEIGHBOURS)
         model.fit(self.DATA)
-        items = model.predict(self.USER_INDEX, self.ITEMS_COUNT)
+        items = model.predict(self.USER_INDEX)
         self.assertTrue(type(items), np.ndarray)
-        self.assertListEqual(list(items.shape), [self.ITEMS_COUNT])
 
     def test_str(self):
         model = UserBasedModel(self.K_NEAREST_NEIGHBOURS)
-        self.assertIn('User based', str(model))
+        self.assertIn('UBM', str(model))
