@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-def __construct_matrix_from_data(rows_indices: np.ndarray, columns_indices: np.ndarray,
+def _construct_matrix_from_data(rows_indices: np.ndarray, columns_indices: np.ndarray,
                                  data: np.ndarray, shape: tp.Tuple[int, int]) -> sparse.coo_matrix:
     """
     Method to generate sparse matrix from data
@@ -147,4 +147,4 @@ def generate_sparse_matrix(table: pd.DataFrame, column_user_id: str, column_item
     columns = np.array(table[column_item_id].apply(lambda user_id: dict_from_item_ids_to_indices[user_id]))
     data = np.array(table[column_rating])
 
-    return __construct_matrix_from_data(rows, columns, data, matrix_shape)
+    return _construct_matrix_from_data(rows, columns, data, matrix_shape)
