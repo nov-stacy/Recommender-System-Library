@@ -46,8 +46,7 @@ def main():
                 (data, AlternatingLeastSquaresModel(dimension), dimension * 2, error_name),
                 (data, HierarchicalAlternatingLeastSquaresModel(dimension), dimension * 2, error_name),
                 (data, ImplicitStochasticLatentFactorModel(dimension, 0.0001), dimension * 2, error_name),
-                (data, ImplicitAlternatingLeastSquaresModel(dimension), dimension * 2, error_name),
-                (data, ImplicitHierarchicalAlternatingLeastSquaresModel(dimension), dimension * 2, error_name),
+                (data, ImplicitHierarchicalAlternatingLeastSquaresModel(dimension), dimension * 2, error_name)
             ])
 
     for data_name, model, epoch, debug_name in experiments:
