@@ -27,10 +27,11 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsARS):
         for index in range(self._users_matrix.shape[0]):
             ith_row = self._implicit_data_with_reg.getrow(index).toarray()
             quotient_matrix = (ith_row * self._items_matrix.T).dot(self._items_matrix)
+            vector = self._items_matrix.T.dot(ith_row.T * self._implicit_data.getrow(index).toarray().T)
             try:
-                self._users_matrix[index, :] = sla.solve(quotient_matrix, self._items_matrix.T.dot(ith_row.T * self._implicit_data.getrow(index).toarray().T)).flatten()
+                self._users_matrix[index, :] = sla.solve(quotient_matrix, vector).flatten()
             except (np.linalg.LinAlgError, sla.LinAlgError):
-                self._users_matrix[index, :] = quotient_matrix.dot(self._items_matrix.T.dot(ith_row.T * self._implicit_data.getrow(index).toarray().T)).flatten()
+                self._users_matrix[index, :] = quotient_matrix.dot(vector).flatten()
 
     def _calculate_items_matrix(self):
         """
@@ -40,10 +41,11 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsARS):
         for index in range(self._items_matrix.shape[0]):
             ith_col = self._implicit_data_with_reg.getcol(index).toarray().T
             quotient_matrix = (ith_col * self._users_matrix.T).dot(self._users_matrix)
+            vector = self._users_matrix.T.dot(ith_col.T * self._implicit_data.getcol(index).toarray())
             try:
-                self._items_matrix[index, :] = sla.solve(quotient_matrix, self._users_matrix.T.dot(ith_col.T * self._implicit_data.getcol(index).toarray())).flatten()
+                self._items_matrix[index, :] = sla.solve(quotient_matrix, vector).flatten()
             except (np.linalg.LinAlgError, sla.LinAlgError):
-                self._items_matrix[index, :] = quotient_matrix.dot(self._users_matrix.T.dot(ith_col.T * self._implicit_data.getcol(index).toarray())).flatten()
+                self._items_matrix[index, :] = quotient_matrix.dot(vector).flatten()
 
     def _before_fit(self, data: sparse.coo_matrix) -> None:
         self._data = data
@@ -58,4 +60,3 @@ class ImplicitAlternatingLeastSquaresModel(EmbeddingsARS):
 
     def __str__(self) -> str:
         return f'iALS [dimension = {self._dimension}, influence = {self._influence}]'
-
