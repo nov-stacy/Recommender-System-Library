@@ -4,11 +4,11 @@ import typing as tp
 import os
 import shutil
 
-from recommender_system_api.backend.work_with_database._settings import *
+from backend.work_with_database._settings import *
 
-from recommender_system_library.extra_functions.work_with_models import save_model_to_file as _save_model
-from recommender_system_library.extra_functions.work_with_models import get_model_from_file as _get_model_from_file
-from recommender_system_library.models.abstract import AbstractRecommenderSystem
+from recommender_systems.extra_functions.work_with_models import save_model_to_file as _save_model
+from recommender_systems.extra_functions.work_with_models import get_model_from_file as _get_model_from_file
+from recommender_systems.models.abstract import AbstractRecommenderSystem
 
 
 __all__ = [

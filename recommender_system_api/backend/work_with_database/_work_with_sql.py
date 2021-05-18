@@ -3,8 +3,8 @@ import typing as tp
 import secrets
 import sqlite3
 
-from recommender_system_api.backend.work_with_database._settings import PATH_TO_DATABASE
-from recommender_system_api.backend.work_with_database._work_with_file_system import check_path_exist
+from backend.work_with_database._settings import PATH_TO_DATABASE
+from backend.work_with_database._work_with_file_system import check_path_exist
 
 
 __all__ = [

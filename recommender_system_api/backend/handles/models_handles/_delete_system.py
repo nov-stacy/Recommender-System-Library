@@ -1,5 +1,5 @@
-from recommender_system_api.backend.checkers import check_format_of_positive_integer
-from recommender_system_api.backend.work_with_models import *
+from backend.checkers import check_format_of_positive_integer
+from backend.work_with_models import *
 
 
 __all__ = ['delete_recommender_system']

@@ -1,8 +1,8 @@
 import typing as tp
 
-from recommender_system_api.backend.checkers import *
-from recommender_system_api.backend.handles._settings import KEY_STATUS
-from recommender_system_api.backend.work_with_models import check_status_of_system
+from backend.checkers import *
+from backend.handles._settings import KEY_STATUS
+from backend.work_with_models import check_status_of_system
 
 
 __all__ = ['check_status_of_recommender_system']

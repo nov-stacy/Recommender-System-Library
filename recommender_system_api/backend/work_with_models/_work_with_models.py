@@ -2,10 +2,10 @@ import typing as tp
 
 from utilspie.collectionsutils import frozendict
 
-from recommender_system_api.backend.work_with_database import *
-from recommender_system_library.extra_functions.work_with_models import MODELS_NAMES
-from recommender_system_library.models.abstract import AbstractRecommenderSystem
-from recommender_system_library.models import *
+from backend.work_with_database import *
+from recommender_systems.extra_functions.work_with_models import MODELS_NAMES
+from recommender_systems.models.abstract import AbstractRecommenderSystem
+from recommender_systems.models import *
 
 
 __all__ = [

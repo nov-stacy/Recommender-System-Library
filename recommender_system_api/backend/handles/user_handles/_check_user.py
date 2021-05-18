@@ -1,8 +1,8 @@
 import typing as tp
 
-from recommender_system_api.backend.checkers import *
-from recommender_system_api.backend.handles._settings import KEY_TOKEN
-from recommender_system_api.backend.work_with_database import check_user_in_table
+from backend.checkers import *
+from backend.handles._settings import KEY_TOKEN
+from backend.work_with_database import check_user_in_table
 
 
 __all__ = ['check_user_token', 'AuthTokenError']

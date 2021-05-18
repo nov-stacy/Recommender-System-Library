@@ -6,9 +6,9 @@ import typing as tp
 
 from scipy import sparse
 
-from recommender_system_api.backend.work_with_database import check_model_in_table
-from recommender_system_api.backend.work_with_models import *
-from recommender_system_library.models.abstract import AbstractRecommenderSystem
+from backend.work_with_database import check_model_in_table
+from backend.work_with_models import *
+from recommender_systems.models.abstract import AbstractRecommenderSystem
 
 
 __all__ = [
