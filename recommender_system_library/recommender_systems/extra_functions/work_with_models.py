@@ -12,7 +12,8 @@ __all__ = [
 
 MODELS_NAMES = tuple([
     'user_based_model', 'item_based_model', 'latent_factor_als_model', 'latent_factor_hals_model',
-    'latent_factor_sgd_model', 'latent_factor_svd_model', 'implicit_sgd_model'
+    'latent_factor_sgd_model', 'latent_factor_svd_model', 'implicit_sgd_model', 'implicit_als_model',
+    'implicit_hals_model'
 ])
 
 
