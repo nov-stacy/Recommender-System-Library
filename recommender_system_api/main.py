@@ -2,7 +2,7 @@ import typing as tp
 
 import flask
 
-from recommender_system_api import backend
+import backend
 
 app = flask.Flask(__name__)
 
@@ -24,7 +24,9 @@ def method_for_exception_catch(good_status_code):
                     return flask.Response(status=good_status_code)
                 return flask.make_response(flask.jsonify(result), good_status_code)
             # error accessing class methods or invalid user data
-            except (AttributeError, backend.AuthTokenError) as error:
+            except backend.AuthTokenError as error:
+                return flask.make_response(flask.jsonify({'message': str(error)}), 403)
+            except AttributeError as error:
                 return flask.make_response(flask.jsonify({'message': str(error)}), 405)
             except Exception as error:
                 return flask.make_response(flask.jsonify({'message': str(error)}), 400)
