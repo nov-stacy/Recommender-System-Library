@@ -141,7 +141,8 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         self._users_matrix: np.ndarray = np.array([])  # matrix of users with latent features
         self._items_matrix: np.ndarray = np.array([])  # matrix of items with latent features
 
-        self.debug_information = self.__EmbeddingDebug()
+        __EmbeddingDebug = self.__EmbeddingDebug
+        self.debug_information: tp.Optional[__EmbeddingDebug] = None
 
     def _create_user_items_matrix(self, data: sparse.coo_matrix) -> None:
         """
@@ -203,7 +204,7 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         Method for teaching a method during a single epoch
         """
 
-    def _fit(self, epochs: int, debug_name: tp.Optional[str], verbose: bool) -> None:
+    def _fit(self, epochs: int, verbose: bool) -> None:
         """
         Method for training a model
 
@@ -211,8 +212,6 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         ----------
         epochs: int
             The number of epochs that the method must pass
-        debug_name: str or None
-            Name of the debugging function (mse, mae, rmse)
         verbose: bool
             Indicator of showing that the model is training
         """
@@ -221,7 +220,7 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
 
         for _ in list_of_epochs:
             self._train_one_epoch()
-            if debug_name:
+            if self.debug_information:
                 self.debug_information._set(self._users_indices, self._items_indices, self._ratings,
                                             self._users_matrix, self._items_matrix)
 
@@ -258,11 +257,16 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
         if debug_name is not None and type(debug_name) != str:
             raise TypeError('Debug name should have string type')
 
-        self.debug_information._update(debug_name)
+        if debug_name:
+            self.debug_information = self.__EmbeddingDebug()
+            self.debug_information._update(debug_name)
+        else:
+            self.debug_information = None
+
         self._create_user_items_matrix(data)
         self._create_information_for_debugging(data, debug_name)
         self._before_fit(data)
-        self._fit(epochs, debug_name, verbose)
+        self._fit(epochs, verbose)
         self._is_trained = True
 
         return self
@@ -315,10 +319,15 @@ class EmbeddingsARS(AbstractRecommenderSystem, ABC):
             matrix_part = np.random.randn(data.shape[1] - self._items_count, self._dimension)
             self._items_matrix = np.vstack((self._items_matrix, matrix_part))
 
-        self.debug_information._update(debug_name)
+        if debug_name:
+            self.debug_information = self.__EmbeddingDebug()
+            self.debug_information._update(debug_name)
+        else:
+            self.debug_information = None
+
         self._create_information_for_debugging(data, debug_name)
         self._before_fit(data)
-        self._fit(epochs, debug_name, verbose)
+        self._fit(epochs, verbose)
 
         return self
 
