@@ -1,5 +1,5 @@
 
-PATH_TO_DATABASE = '../database'
+PATH_TO_DATABASE = 'database'
 MODELS_FOLDER = 'models'
 
 MODEL_FILE = 'model.pickle'

@@ -38,9 +38,8 @@ def _async_raise(tid, exc_type):
 
 
 class TrainThread(threading.Thread):
-    """
 
-    """
+    DEBUG_NAME = 'debug_name'
 
     def __init__(self, user_id: int, system_id: int, model: AbstractRecommenderSystem, data: sparse.coo_matrix,
                  train_parameters: tp.Dict[str, tp.Any]) -> None:
@@ -50,6 +49,10 @@ class TrainThread(threading.Thread):
         self._model = model
         self._data = data
         self._train_parameters = train_parameters
+
+        if self.DEBUG_NAME in self._train_parameters:
+            self._train_parameters[self.DEBUG_NAME] = None
+
         self.is_training = True
         self.is_error = False
 
